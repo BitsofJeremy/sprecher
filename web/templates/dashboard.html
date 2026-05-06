@@ -199,7 +199,7 @@
         // Load voices
         const voiceSelect = document.getElementById('tts-voice-select');
         try {
-            const response = await fetch('/api/voices');
+            const response = await fetch('/api/tts/voices');
             const data = await response.json();
             const voices = data.voices || [];
             voiceSelect.innerHTML = '<option value="">Select a voice...</option>';

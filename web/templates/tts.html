@@ -113,7 +113,7 @@
 
                 <!-- Format Selection -->
                 <div>
-                    <label for="format" class="block text-sm font-medium text-[var(--sp-muted)] mb-2">
+                    <label for="audio_format" class="block text-sm font-medium text-[var(--sp-muted)] mb-2">
                         Output Format
                     </label>
                     <select id="audio_format" name="audio_format" class="w-full">
@@ -164,7 +164,7 @@
     document.addEventListener('DOMContentLoaded', async function() {
         const voiceSelect = document.getElementById('voice');
         try {
-            const response = await fetch('/api/voices');
+            const response = await fetch('/api/tts/voices');
             if (!response.ok) throw new Error('Failed to fetch');
             const data = await response.json();
             const voices = data.voices || [];

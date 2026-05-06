@@ -63,7 +63,7 @@
                 <label for="voice_id" class="block text-sm font-medium text-[var(--sp-muted)] mb-2">
                     Voice
                 </label>
-                <select id="voice_id" name="voice_id" class="w-full">
+                <select id="voice_id" name="voice_key" class="w-full">
                     <option value="">-- Select a voice --</option>
                 </select>
                 <p class="text-xs text-[var(--sp-muted)] mt-1">
@@ -193,9 +193,9 @@
             const response = await fetch('/api/voices');
             const data = await response.json();
             const select = document.getElementById('voice_id');
-            data.voices.forEach(voice => {
+            (data.voices || []).forEach(voice => {
                 const option = document.createElement('option');
-                option.value = voice.id;
+                option.value = voice.voice_key || voice.slug;
                 option.textContent = `${voice.name} (${voice.engine})`;
                 select.appendChild(option);
             });
@@ -229,7 +229,7 @@
             formData.append('document', file);
             fetch('/api/narrate/preview', {
                 method: 'POST',
-                body: formData
+                body: formData,
             })
             .then(r => r.json())
             .then(data => {
