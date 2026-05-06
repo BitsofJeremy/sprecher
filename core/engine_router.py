@@ -37,11 +37,18 @@ class EngineRouter:
         for name, engine_cls in AVAILABLE_ENGINES.items():
             engine = engine_cls.get_engine()
             voices = engine.list_voices()
+            # Engine capabilities
+            if name == "kokoro":
+                capabilities = {"cloning": False, "design": False}
+            elif name == "qwen":
+                capabilities = {"cloning": False, "design": True}  # Qwen supports voice design
+            else:
+                capabilities = {"cloning": False, "design": False}
             engines.append({
                 "id": name,
                 "name": name.replace("_", " ").title(),
-                "cloning": False,
-                "design": False,
+                "cloning": capabilities["cloning"],
+                "design": capabilities["design"],
                 "voices": len(voices),
             })
         return engines

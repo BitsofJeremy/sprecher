@@ -1,149 +1,86 @@
 # Sprecher Debugging TODO
 
-## Status: TTS Sync Endpoint Broken
+## Status: COMPLETED (2026-05-06)
 
-**Goal:** Get Qwen TTS working with Pixel (primary) and fix Kokoro TTS (secondary)
-
----
-
-## Findings from Mac-side Testing (2026-05-06)
-
-### Working
-- `GET /api/health` → `{"status":"ok","engines":["kokoro","qwen","whisper"]}` ✅
-- `GET /api/tts/voices` → 53 Kokoro voices returned ✅
-- Auth correctly validates Bearer token ✅
-
-### Broken
-- `POST /api/tts/sync` → **500 Internal Server Error** for ALL valid Kokoro voices
+Both Kokoro and Qwen TTS are now working.
 
 ---
 
-## Root Cause Hypothesis
+## Completed Fixes
 
-The error occurs in `core/tts/kokoro_engine.py` in `_ensure_model()` method at line 163-169:
+### Kokoro TTS - Fixed
+**Problem:** `kokoro_onnx.utils.download_model` doesn't exist in kokoro-onnx v0.5.0
+**Fix:** Updated `_ensure_model()` in `core/tts/kokoro_engine.py` to raise clear `FileNotFoundError` if models missing instead of trying to download.
 
-```python
-def _ensure_model(self) -> str:
-    KokoroClass = _get_kokoro()
-    model_path = self.model_dir / "kokoro-v1.0.onnx"
-    if not model_path.exists():
-        from kokoro_onnx.utils import download_model  # <-- PROBLEM
-        download_model(str(self.model_dir))
+### Service Configuration - Fixed
+**Problem:** Service ran as `User=root` with `SPRECHER_WORK_DIR=/root/sprecher`
+**Fix:** Changed to `User=jeremy` and `SPRECHER_WORK_DIR=/home/jeremy/Documents/current_projects/ai_speech/sprecher`
+
+### Qwen TTS - Implemented
+**Problem:** Qwen was a stub returning silence
+**Fix:** Installed `qwen-tts` package, updated `qwen_engine.py` to use real Qwen3-TTS-12Hz-1.7B-VoiceDesign model
+
+---
+
+## Current State
+
+### Working Engines
+- **Kokoro**: 53 voices, fast CPU inference
+- **Qwen**: 10 voice design presets, requires NVIDIA GPU
+
+### Model Locations
+- Kokoro models: `/home/jeremy/.claude/kokoro-models/` (symlinked from `/home/jeremy/models/`)
+- Qwen model: HuggingFace cache at `~/.cache/huggingface/hub/models--Qwen--Qwen3-TTS-12Hz-1.7B-VoiceDesign`
+
+### GPU Memory Note
+Qwen requires ~8GB GPU memory. ComfyUI was using 8.6GB on the RTX 3060.
+If Qwen fails with OOM, stop ComfyUI first: `kill $(pgrep -f comfyui)`
+
+### Available Qwen Voice Designs
+```
+qwen_warm      - warm and friendly female voice
+qwen_pro       - professional business tone
+qwen_narrator  - deep narrative voice for storytelling
+qwen_young     - young energetic person
+qwen_calm      - calm and soothing voice
+qwen_british   - British accent formal
+qwen_american  - casual American accent
+qwen_robot     - robotic synthetic voice
+qwen_whisper   - soft whisper
+qwen_excited   - very excited and enthusiastic
 ```
 
-**Problem:** `kokoro_onnx.utils` module does not exist or `download_model` function not found.
-
-When TTS sync is called, it triggers `get_kokoro_engine()` which calls `_get_kokoro_instance()` which calls `_ensure_model()` which tries to import from `kokoro_onnx.utils`. This raises `ModuleNotFoundError`.
-
 ---
 
-## Server-side Investigation Steps
-
-### 1. Check kokoro-onnx Installation
+## Testing Commands
 
 ```bash
-# Check version and what's available
-pip show kokoro-onnx
+# Health check
+curl http://localhost:8400/api/health
 
-# Test if Kokoro imports at all
-python -c "from kokoro_onnx import Kokoro; print('OK')"
+# List engines
+curl http://localhost:8400/api/tts/engines -H "Authorization: Bearer sprecher-secret-key-2026"
 
-# Check if utils submodule exists
-python -c "from kokoro_onnx import utils; print(dir(utils))"
-```
+# Test Kokoro
+curl -X POST http://localhost:8400/api/tts/sync \
+  -H "Authorization: Bearer sprecher-secret-key-2026" \
+  -d "text=Hello from Kokoro&voice=bf_emma&engine=kokoro"
 
-### 2. Check Model Files
-
-```bash
-ls -la ~/.claude/kokoro-models/
-# If files exist, _ensure_model should not try to download
-```
-
-### 3. Check Application Logs
-
-```bash
-# If running via systemd
-journalctl -u sprecher-web --no-pager -n 100
-
-# If running directly
-cd ~/sprecher
-source .venv/bin/activate
-python -c "
-import asyncio
-from core.tts.kokoro_engine import get_kokoro_engine
-async def test():
-    engine = get_kokoro_engine()
-    result = await engine.generate('Hello', 'bf_emma')
-    print(f'Generated {len(result[0])} samples')
-asyncio.run(test())
-"
-```
-
-### 4. Try Direct Kokoro Test
-
-```bash
-python -c "
-from kokoro_onnx import Kokoro
-import numpy as np
-
-# Check available
-print('Kokoro class:', Kokoro)
-
-# Model path check
-from pathlib import Path
-model_dir = Path('~/.claude/kokoro-models').expanduser()
-model_path = model_dir / 'kokoro-v1.0.onnx'
-voices_path = model_dir / 'voices.bin'
-print(f'Model exists: {model_path.exists()}')
-print(f'Voices exists: {voices_path.exists()}')
-"
+# Test Qwen
+curl -X POST http://localhost:8400/api/tts/sync \
+  -H "Authorization: Bearer sprecher-secret-key-2026" \
+  -d "text=Hello from Qwen voice design&voice=qwen_warm&engine=qwen"
 ```
 
 ---
 
-## The Fix (once root cause confirmed)
+## Known Issues
 
-The `_ensure_model` function needs to be fixed to handle the case where:
-1. Models already exist → don't try to download
-2. `kokoro_onnx.utils` doesn't exist → remove download dependency
+1. **flash-attn not installed** - Qwen works but is slower. Install with:
+   ```bash
+   pip install flash-attn --no-build-isolation
+   ```
 
-**Likely fix:** Remove the `download_model` call entirely. If model doesn't exist, raise a clear error pointing to manual download instructions.
+2. **Voice cloning not implemented** - Qwen supports voice cloning via `generate_voice_clone()` but we only exposed voice design. Could add if needed.
 
-```python
-def _ensure_model(self) -> str:
-    """Ensure model is available, return model path."""
-    model_path = self.model_dir / "kokoro-v1.0.onnx"
-    voices_path = self.model_dir / "voices.bin"
-
-    if not model_path.exists() or not voices_path.exists():
-        raise FileNotFoundError(
-            f"Kokoro model not found at {self.model_dir}. "
-            "Please download from https://github.com/remsky/kokoro-onnx/releases"
-        )
-
-    return str(model_path)
-```
-
----
-
-## Qwen TTS Status
-
-Qwen engine (`core/tts/qwen_engine.py`) is a STUB that returns silence:
-- `_available = False` (qwen3_tts not installed)
-- `generate()` returns 1 second of silence
-
-To get Qwen working:
-1. Install `qwen3_tts` package
-2. Download Qwen3-TTS model
-3. Update `qwen_engine.py` to use real implementation
-
----
-
-## Next Steps
-
-1. SSH to server: `ssh sprecher.nexus.home.test`
-2. Investigate kokoro-onnx import issue
-3. Confirm model files exist or download them
-4. Apply fix to `kokoro_engine.py`
-5. Test TTS sync with valid request
-6. Then work on Qwen integration
+3. **ComfyUI GPU conflict** - Qwen and ComfyUI cannot coexist on 12GB GPU. Stop one to use the other.

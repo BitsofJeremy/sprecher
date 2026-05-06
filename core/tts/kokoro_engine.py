@@ -153,20 +153,21 @@ class KokoroEngine(TTSEngine):
         return cls._instance
 
     def _ensure_model(self) -> str:
-        """Ensure model is downloaded, return model path."""
-        KokoroClass = _get_kokoro()
+        """Ensure model is available, return model path.
 
-        # Auto-download from release if model not found
+        Raises FileNotFoundError if models are missing.
+        Download instructions: https://github.com/remsky/kokoro-onnx/releases
+        """
         model_path = self.model_dir / "kokoro-v1.0.onnx"
-        if not model_path.exists():
-            from kokoro_onnx.utils import download_model
-            download_model(str(self.model_dir))
-
-        # Check for voices pack
         voices_path = self.model_dir / "voices.bin"
-        if not voices_path.exists():
-            from kokoro_onnx.utils import download_model
-            download_model(str(self.model_dir), model="voices")
+
+        if not model_path.exists() or not voices_path.exists():
+            raise FileNotFoundError(
+                f"Kokoro model not found at {self.model_dir}.\n"
+                "Please download from https://github.com/remsky/kokoro-onnx/releases\n"
+                f"  - kokoro-v1.0.onnx\n"
+                f"  - voices.bin"
+            )
 
         return str(model_path)
 

@@ -50,29 +50,41 @@ async def tts_sync(
     if not text:
         raise HTTPException(status_code=400, detail="Text is required")
 
-    if engine != "kokoro":
-        raise HTTPException(status_code=400, detail=f"Engine '{engine}' not supported in Phase 1a. Use 'kokoro'.")
-
     # Generate unique filename
     file_id = uuid.uuid4().hex[:12]
     output_filename = f"{file_id}.{audio_format}"
     output_path = config.WORK_DIR / "data" / "output" / output_filename
 
-    # Get Kokoro engine and generate
-    kokoro = get_kokoro_engine()
-
-    # Validate voice
-    if not kokoro.validate_voice(voice):
-        raise HTTPException(status_code=400, detail=f"Invalid voice: '{voice}'. Use /api/tts/voices to list available voices.")
-
-    # Generate audio
-    await kokoro.generate_to_file(
-        text=text,
-        voice=voice,
-        output_path=output_path,
-        speed=speed,
-        audio_format=audio_format,
-    )
+    # Get engine and generate
+    if engine == "kokoro":
+        tts_engine = get_kokoro_engine()
+        # Validate voice
+        if not tts_engine.validate_voice(voice):
+            raise HTTPException(status_code=400, detail=f"Invalid voice: '{voice}'. Use /api/tts/voices to list available voices.")
+        # Generate audio
+        await tts_engine.generate_to_file(
+            text=text,
+            voice=voice,
+            output_path=output_path,
+            speed=speed,
+            audio_format=audio_format,
+        )
+    elif engine == "qwen":
+        from core.tts.qwen_engine import get_qwen_engine
+        qwen_engine = get_qwen_engine()
+        if not qwen_engine.is_available:
+            raise HTTPException(status_code=503, detail="Qwen engine not available (GPU required)")
+        if not qwen_engine.validate_voice(voice):
+            raise HTTPException(status_code=400, detail=f"Invalid voice: '{voice}'. Use /api/tts/voices to list available voices.")
+        await qwen_engine.generate_to_file(
+            text=text,
+            voice=voice,
+            output_path=output_path,
+            speed=speed,
+            audio_format=audio_format,
+        )
+    else:
+        raise HTTPException(status_code=400, detail=f"Engine '{engine}' not supported. Use 'kokoro' or 'qwen'.")
 
     # Calculate duration (approximate for short texts)
     duration = len(text) / (150 * speed)  # ~150 words per minute
