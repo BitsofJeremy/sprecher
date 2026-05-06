@@ -59,8 +59,13 @@ async def tts_sync(
     output_filename = f"{file_id}.{audio_format}"
     output_path = config.WORK_DIR / "data" / "output" / output_filename
 
+    # Auto-detect engine for custom voices
+    effective_engine = engine
+    if voice.startswith("ephergent_") or voice.startswith("mm_"):
+        effective_engine = "minimax"
+
     # Get engine and generate
-    if engine == "kokoro":
+    if effective_engine == "kokoro":
         tts_engine = get_kokoro_engine()
         # Validate voice
         if not tts_engine.validate_voice(voice):
@@ -73,7 +78,7 @@ async def tts_sync(
             speed=speed,
             audio_format=audio_format,
         )
-    elif engine == "qwen":
+    elif effective_engine == "qwen":
         from core.tts.qwen_engine import get_qwen_engine
         qwen_engine = get_qwen_engine()
         if not qwen_engine.is_available:
@@ -87,8 +92,20 @@ async def tts_sync(
             speed=speed,
             audio_format=audio_format,
         )
+    elif effective_engine == "minimax":
+        from core.tts.minimax_engine import get_minimax_engine
+        minimax_engine = get_minimax_engine()
+        if not minimax_engine.is_available:
+            raise HTTPException(status_code=503, detail="MiniMax engine not available (API key missing)")
+        await minimax_engine.generate_to_file(
+            text=text,
+            voice=voice,
+            output_path=output_path,
+            speed=speed,
+            audio_format=audio_format,
+        )
     else:
-        raise HTTPException(status_code=400, detail=f"Engine '{engine}' not supported. Use 'kokoro' or 'qwen'.")
+        raise HTTPException(status_code=400, detail=f"Engine '{engine}' not supported. Use 'kokoro', 'qwen', or 'minimax'.")
 
     # Calculate duration (approximate for short texts)
     duration = len(text) / (150 * speed)  # ~150 words per minute
@@ -104,13 +121,33 @@ async def tts_sync(
 
 @router.get("/tts/voices")
 async def tts_voices(authorization: Optional[str] = Header(None)):
-    """List available Kokoro voices."""
+    """List available Kokoro voices, plus any custom voices from the DB."""
     await verify_api_key(authorization)
 
     kokoro = get_kokoro_engine()
-    voices = kokoro.list_voices()
+    kokoro_voices = kokoro.list_voices()
 
-    return JSONResponse({"voices": voices})
+    # Also fetch custom voices from DB (Ephergent voices, etc.)
+    from db.voices import list_voices as db_list_voices
+    db_voices = await db_list_voices(limit=100)
+    # Transform DB voice format to match API format
+    custom_voices = []
+    for v in db_voices:
+        custom_voices.append({
+            "key": v.get("voice_key") or v.get("slug") or str(v["id"]),
+            "name": v["name"],
+            "gender": v.get("speaking_style", "").lower() or "neutral",
+            "lang": v.get("language", "en-us"),
+            "description": v.get("voice_description", ""),
+            "engine": v["engine"],
+            "voice_type": v["voice_type"],
+            "slug": v.get("slug"),
+            "voice_key": v.get("voice_key"),
+            "ref_audio_path": v.get("ref_audio_path"),
+        })
+
+    all_voices = kokoro_voices + custom_voices
+    return JSONResponse({"voices": all_voices})
 
 
 @router.get("/tts/engines")
@@ -147,15 +184,20 @@ async def tts_async(
     if not text:
         raise HTTPException(status_code=400, detail="Text is required")
 
+    # Auto-detect engine for custom voices
+    effective_engine = engine
+    if voice.startswith("ephergent_") or voice.startswith("mm_"):
+        effective_engine = "minimax"
+
     # Get engine and validate voice
-    if engine == "kokoro":
+    if effective_engine == "kokoro":
         kokoro = get_kokoro_engine()
         if not kokoro.validate_voice(voice):
             raise HTTPException(
                 status_code=400,
                 detail=f"Invalid voice: '{voice}'. Use /api/tts/voices to list available voices."
             )
-    elif engine == "qwen":
+    elif effective_engine == "qwen":
         from core.tts.qwen_engine import get_qwen_engine
         qwen = get_qwen_engine()
         if not qwen.validate_voice(voice):
@@ -163,10 +205,12 @@ async def tts_async(
                 status_code=400,
                 detail=f"Invalid voice: '{voice}'. Use /api/tts/voices to list available voices."
             )
+    elif effective_engine == "minimax":
+        pass  # validated by presence of MINIMAX_API_KEY
     else:
         raise HTTPException(
             status_code=400,
-            detail=f"Engine '{engine}' not supported. Use 'kokoro' or 'qwen'."
+            detail=f"Engine '{engine}' not supported. Use 'kokoro', 'qwen', or 'minimax'."
         )
 
     # Create job in database
