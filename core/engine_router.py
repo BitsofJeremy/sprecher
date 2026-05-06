@@ -5,13 +5,11 @@ from typing import Optional
 from core.tts.base import TTSEngine
 from core.tts.kokoro_engine import KokoroEngine, get_kokoro_engine
 from core.tts.qwen_engine import QwenEngine, get_qwen_engine
-from core.tts.minimax_engine import MiniMaxEngine, get_minimax_engine
 
 # Available TTS engines
 AVAILABLE_ENGINES = {
     "kokoro": KokoroEngine,
     "qwen": QwenEngine,
-    "minimax": MiniMaxEngine,
 }
 
 
@@ -43,9 +41,7 @@ class EngineRouter:
             if name == "kokoro":
                 capabilities = {"cloning": False, "design": False}
             elif name == "qwen":
-                capabilities = {"cloning": False, "design": True}
-            elif name == "minimax":
-                capabilities = {"cloning": True, "design": False}
+                capabilities = {"cloning": False, "design": True}  # Qwen supports voice design
             else:
                 capabilities = {"cloning": False, "design": False}
             engines.append({
