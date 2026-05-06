@@ -23,6 +23,8 @@ DEFAULT_ENGINE = os.environ.get("SPRECHER_DEFAULT_ENGINE", "kokoro")
 
 # Auth
 API_KEY = os.environ.get("SPRECHER_API_KEY", "")
+# Set SPRECHER_AUTH_DISABLED=true to disable API auth (useful for local web UI)
+AUTH_DISABLED = os.environ.get("SPRECHER_AUTH_DISABLED", "false").lower() == "true"
 
 # Ensure runtime directories exist
 def ensure_dirs() -> None:

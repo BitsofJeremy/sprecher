@@ -16,6 +16,8 @@ router = APIRouter()
 
 async def verify_api_key(authorization: Optional[str] = Header(None)) -> bool:
     """Verify API key if configured."""
+    if config.AUTH_DISABLED:
+        return True
     if not config.API_KEY:
         return True  # No auth configured
 
