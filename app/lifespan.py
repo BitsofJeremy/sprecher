@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 import config
-from db import init_db_schema, seed_voices, seed_system_voices
+from db import init_db_schema_async, seed_voices, seed_system_voices
 from db.get_db import get_db
 from jobs import get_job_runner
 
@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI):
 
     # Initialize database schema and seed data
     async with get_db() as db:
-        init_db_schema(db)
+        await init_db_schema_async(db)
         await seed_voices(db)
         await seed_system_voices(db)
 

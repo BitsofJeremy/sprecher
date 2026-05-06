@@ -69,6 +69,35 @@ CREATE INDEX IF NOT EXISTS idx_voices_engine ON voices(engine);
 
 
 def init_db_schema(conn):
-    """Initialize database schema."""
-    conn.executescript(SCHEMA_SQL)
-    conn.commit()
+    """Initialize database schema. Works with both sync (sqlite3) and async (aiosqlite) connections."""
+    import asyncio
+    # Check if it's an aiosqlite connection (has awaitable executescript)
+    try:
+        coro = conn.executescript(SCHEMA_SQL)
+        # It's async - await it
+        if hasattr(coro, '__await__'):
+            # Create an event loop if needed and run the coroutine
+            try:
+                loop = asyncio.get_running_loop()
+                # We're in async context, use create_task or handle differently
+                pass
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                loop.run_until_complete(coro)
+                return
+            # Fallback - run in own loop
+            loop = asyncio.new_event_loop()
+            loop.run_until_complete(coro)
+        else:
+            conn.commit()
+    except AttributeError:
+        # Sync sqlite3 connection
+        conn.executescript(SCHEMA_SQL)
+        conn.commit()
+
+
+async def init_db_schema_async(conn):
+    """Async version for use with await."""
+    await conn.executescript(SCHEMA_SQL)
+    await conn.commit()

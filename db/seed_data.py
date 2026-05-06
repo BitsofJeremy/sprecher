@@ -48,7 +48,7 @@ KOKORO_VOICES = [
     {"key": "am_bridge", "name": "Bridge M", "gender": "male", "lang": "en-us", "description": "Neutral male bridge voice"},
     {"key": "bf_heat_v2", "name": "Heat v2", "gender": "female", "lang": "en-us", "description": "Heatmap female v2"},
     {"key": "af_heat_v2", "name": "Heat v2 (af)", "gender": "female", "lang": "en-us", "description": "Heatmap female alternate v2"},
-    {"key": "bf_emma", "name": "Emma", "gender": "female", "lang": "en-us", "description": "Original Emma voice"},
+    {"key": "bf_emma_v1", "name": "Emma v1", "gender": "female", "lang": "en-us", "description": "Original Emma voice"},
     {"key": "bf_heat_emma_v2", "name": "Heat Emma v2", "gender": "female", "lang": "en-us", "description": "Heatmap Emma v2"},
     {"key": "af_sarah_v2", "name": "Sarah v2 (af)", "gender": "female", "lang": "en-us", "description": "Sarah alternate v2"},
     {"key": "af_bella_v2", "name": "Bella v2 (af)", "gender": "female", "lang": "en-us", "description": "Bella alternate v2"},
