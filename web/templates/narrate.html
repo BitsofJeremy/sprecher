@@ -60,10 +60,10 @@
 
             <!-- Voice Selection -->
             <div>
-                <label for="voice_id" class="block text-sm font-medium text-[var(--sp-muted)] mb-2">
+                <label for="voice_key" class="block text-sm font-medium text-[var(--sp-muted)] mb-2">
                     Voice
                 </label>
-                <select id="voice_id" name="voice_key" class="w-full">
+                <select id="voice_key" name="voice_key" class="w-full">
                     <option value="">-- Select a voice --</option>
                 </select>
                 <p class="text-xs text-[var(--sp-muted)] mt-1">
@@ -190,12 +190,19 @@
     // Load voices on page load
     async function loadVoices() {
         try {
-            const response = await fetch('/api/voices');
+            const response = await fetch('/api/tts/voices');
             const data = await response.json();
+<<<<<<< HEAD
             const select = document.getElementById('voice_id');
             (data.voices || []).forEach(voice => {
                 const option = document.createElement('option');
                 option.value = voice.voice_key || voice.slug;
+=======
+            const select = document.getElementById('voice_key');
+            data.voices.forEach(voice => {
+                const option = document.createElement('option');
+                option.value = voice.voice_key;
+>>>>>>> be4591c (Fix frontend: fix form field names, API endpoints, and nginx alias)
                 option.textContent = `${voice.name} (${voice.engine})`;
                 select.appendChild(option);
             });
