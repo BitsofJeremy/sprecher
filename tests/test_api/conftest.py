@@ -40,7 +40,7 @@ def test_client(temp_work_dir, monkeypatch):
 
     # Initialize DB schema using sync sqlite
     import sqlite3
-    from db.schema import init_db_schema
+    from db.schema import init_db_schema, init_db_schema_async
 
     conn = sqlite3.connect(db_path)
     init_db_schema(conn)
@@ -61,10 +61,9 @@ def test_client(temp_work_dir, monkeypatch):
     # Minimal async lifespan that skips the real startup DB logic
     @asynccontextmanager
     async def test_lifespan(app):
-        # Manually init the async DB
+        # Manually init the async DB (use async version since we're in async context)
         async with aiosqlite.connect(db_path) as db:
-            init_db_schema(db)
-            await db.commit()
+            await init_db_schema_async(db)
         yield
 
     # Patch all import variants of get_db so lifespan + route handlers both work
