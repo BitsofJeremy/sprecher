@@ -1,0 +1,181 @@
+/**
+ * Sprecher Custom Styles
+ *
+ * This file contains additional CSS that supplements the inline styles in base.html.
+ * Most styling is done via Tailwind classes and CSS custom properties.
+ */
+
+/* Animation for audio wave visualization (if needed later) */
+@keyframes audio-wave {
+    0%, 100% { transform: scaleY(0.3); }
+    50% { transform: scaleY(1); }
+}
+
+.audio-wave-bar {
+    animation: audio-wave 1s ease-in-out infinite;
+}
+
+.audio-wave-bar:nth-child(1) { animation-delay: 0s; }
+.audio-wave-bar:nth-child(2) { animation-delay: 0.1s; }
+.audio-wave-bar:nth-child(3) { animation-delay: 0.2s; }
+.audio-wave-bar:nth-child(4) { animation-delay: 0.3s; }
+.audio-wave-bar:nth-child(5) { animation-delay: 0.4s; }
+
+/* Loading skeleton */
+@keyframes skeleton-pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.7; }
+}
+
+.skeleton {
+    animation: skeleton-pulse 1.5s ease-in-out infinite;
+    background: linear-gradient(90deg, var(--sp-surface) 0%, var(--sp-surface-hover) 50%, var(--sp-surface) 100%);
+    background-size: 200% 100%;
+}
+
+/* Card hover glow for accent effect */
+.card-interactive {
+    transition: all 0.2s ease-out;
+}
+
+.card-interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(124, 92, 252, 0.2);
+}
+
+/* Focus styles for accessibility */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--sp-accent);
+    outline-offset: 2px;
+}
+
+/* Drag and drop visual feedback */
+.drop-zone-active {
+    border-color: var(--sp-accent) !important;
+    background-color: rgba(124, 92, 252, 0.1) !important;
+    transform: scale(1.01);
+}
+
+/* Table row hover enhancement */
+tr:hover {
+    background-color: var(--sp-surface-hover);
+}
+
+/* Custom selection color */
+::selection {
+    background-color: rgba(124, 92, 252, 0.3);
+    color: var(--sp-text);
+}
+
+/* Audio player styling */
+audio {
+    width: 100%;
+    height: 40px;
+    border-radius: 20px;
+}
+
+audio::-webkit-media-controls-panel {
+    background-color: var(--sp-surface);
+}
+
+/* Range slider custom styling */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+    height: 6px;
+    background: var(--sp-border);
+    border-radius: 3px;
+}
+
+input[type="range"]::-moz-range-track {
+    height: 6px;
+    background: var(--sp-border);
+    border-radius: 3px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--sp-accent);
+    border-radius: 50%;
+    margin-top: -6px;
+    box-shadow: 0 2px 8px rgba(124, 92, 252, 0.4);
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: var(--sp-accent);
+    border-radius: 50%;
+    border: none;
+    box-shadow: 0 2px 8px rgba(124, 92, 252, 0.4);
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+input[type="range"]:hover::-webkit-slider-thumb {
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(124, 92, 252, 0.5);
+}
+
+input[type="range"]:hover::-moz-range-thumb {
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(124, 92, 252, 0.5);
+}
+
+/* Checkbox and radio custom styling */
+input[type="checkbox"],
+input[type="radio"] {
+    accent-color: var(--sp-accent);
+}
+
+/* Scrollbar styling for webkit browsers */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--sp-surface);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--sp-border);
+    border-radius: 5px;
+    border: 2px solid var(--sp-surface);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--sp-muted);
+}
+
+/* Utility classes */
+.text-gradient {
+    background: linear-gradient(135deg, var(--sp-accent), var(--sp-accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.border-gradient {
+    border-image: linear-gradient(135deg, var(--sp-accent), var(--sp-accent2)) 1;
+}
+
+.glow-accent {
+    box-shadow: 0 0 20px rgba(124, 92, 252, 0.3);
+}
+
+.glow-accent2 {
+    box-shadow: 0 0 20px rgba(0, 212, 170, 0.3);
+}

@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Sprecher{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-[var(--sp-text)] mb-2">Sprecher</h1>
+        <p class="text-[var(--sp-muted)]">Unified Voice Synthesis & Transcription</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <!-- Total Voices -->
+        <div class="card p-5 card-glow">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-[var(--sp-muted)] text-sm">Total Voices</span>
+                <i class='bx bx-user-voice text-xl text-[var(--sp-accent)]'></i>
+            </div>
+            <p class="text-3xl font-bold">12</p>
+            <p class="text-xs text-[var(--sp-muted)] mt-1">8 Kokoro, 4 Qwen</p>
+        </div>
+
+        <!-- Running Jobs -->
+        <div class="card p-5 card-glow">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-[var(--sp-muted)] text-sm">Running Jobs</span>
+                <i class='bx bx-loader-alt text-xl text-[var(--sp-accent2)]'></i>
+            </div>
+            <p class="text-3xl font-bold">2</p>
+            <p class="text-xs text-[var(--sp-muted)] mt-1">0 queued</p>
+        </div>
+
+        <!-- Completed Today -->
+        <div class="card p-5 card-glow">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-[var(--sp-muted)] text-sm">Completed Today</span>
+                <i class='bx bx-check-circle text-xl text-[var(--sp-success)]'></i>
+            </div>
+            <p class="text-3xl font-bold">7</p>
+            <p class="text-xs text-[var(--sp-muted)] mt-1">Success rate: 100%</p>
+        </div>
+
+        <!-- Engines Online -->
+        <div class="card p-5 card-glow">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-[var(--sp-muted)] text-sm">Engines Online</span>
+                <i class='bx bx-cog text-xl text-[var(--sp-accent)]'></i>
+            </div>
+            <p class="text-3xl font-bold">2</p>
+            <p class="text-xs text-[var(--sp-muted)] mt-1">Kokoro + Qwen</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Quick TTS Form -->
+        <div class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold">Quick TTS</h2>
+                <i class='bx bx-microphone text-2xl text-[var(--sp-accent)]'></i>
+            </div>
+
+            <form hx-post="/api/tts/sync" hx-swap="innerHTML" hx-target="#tts-result" class="space-y-4">
+                <div>
+                    <label class="block text-sm text-[var(--sp-muted)] mb-2">Text</label>
+                    <textarea
+                        name="text"
+                        rows="4"
+                        class="w-full"
+                        placeholder="Enter text to speak..."
+                        required
+                    ></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm text-[var(--sp-muted)] mb-2">Voice</label>
+                    <select name="voice" id="tts-voice-select" class="w-full">
+                        <option value="">Loading voices...</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm text-[var(--sp-muted)] mb-2">Engine</label>
+                        <div class="flex gap-3">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="engine" value="kokoro" checked class="accent-[var(--sp-accent)]">
+                                <span class="text-sm">Kokoro</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="engine" value="qwen" class="accent-[var(--sp-accent)]">
+                                <span class="text-sm">Qwen</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm text-[var(--sp-muted)] mb-2">Format</label>
+                        <select name="format" class="w-full">
+                            <option value="mp3">MP3</option>
+                            <option value="wav">WAV</option>
+                            <option value="ogg">OGG</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm text-[var(--sp-muted)] mb-2">
+                        Speed: <span id="speed-value">1.0</span>x
+                    </label>
+                    <input
+                        type="range"
+                        name="speed"
+                        min="0.5"
+                        max="2.0"
+                        step="0.1"
+                        value="1.0"
+                        class="w-full"
+                        oninput="document.getElementById('speed-value').textContent = this.value"
+                    >
+                </div>
+
+                <button type="submit" class="btn-primary w-full py-3 rounded-lg font-medium flex items-center justify-center gap-2">
+                    <span>Generate Speech</span>
+                    <i class='bx bx-send'></i>
+                    <span class="htmx-indicator">
+                        <i class='bx bx-loader-alt animate-spin'></i>
+                    </span>
+                </button>
+            </form>
+
+            <!-- Result Area -->
+            <div id="tts-result" class="mt-4">
+                <!-- Audio player will appear here -->
+            </div>
+        </div>
+
+        <!-- Recent Jobs -->
+        <div class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold">Recent Jobs</h2>
+                <a href="/jobs" class="text-sm text-[var(--sp-accent)] hover:text-[var(--sp-accent-hover)] flex items-center gap-1">
+                    View all <i class='bx bx-chevron-right'></i>
+                </a>
+            </div>
+
+            <div class="space-y-3">
+                <!-- Job Item 1 -->
+                <div class="flex items-center justify-between p-3 rounded-lg bg-[var(--sp-bg)]">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-[var(--sp-accent)]/20 flex items-center justify-center">
+                            <i class='bx bx-microphone text-[var(--sp-accent)]'></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium">Chapter 1 Narration</p>
+                            <p class="text-xs text-[var(--sp-muted)]">Kokoro - Pixel Paradox</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="status-running text-xs px-2 py-1 rounded-full">
+                            <span class="pulse-dot inline-block w-1.5 h-1.5 rounded-full bg-current mr-1"></span>
+                            Running
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Job Item 2 -->
+                <div class="flex items-center justify-between p-3 rounded-lg bg-[var(--sp-bg)]">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-[var(--sp-accent2)]/20 flex items-center justify-center">
+                            <i class='bx bx-message-dots text-[var(--sp-accent2)]'></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium">Interview Recording</p>
+                            <p class="text-xs text-[var(--sp-muted)]">STT - Whisper</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="status-queued text-xs px-2 py-1 rounded-full">Queued</span>
+                    </div>
+                </div>
+
+                <!-- Job Item 3 -->
+                <div class="flex items-center justify-between p-3 rounded-lg bg-[var(--sp-bg)]">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-[var(--sp-accent)]/20 flex items-center justify-center">
+                            <i class='bx bx-microphone text-[var(--sp-accent)]'></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium">Scene 42 Audio</p>
+                            <p class="text-xs text-[var(--sp-muted)]">Qwen - Arc</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="status-completed text-xs px-2 py-1 rounded-full">Completed</span>
+                    </div>
+                </div>
+
+                <!-- Job Item 4 -->
+                <div class="flex items-center justify-between p-3 rounded-lg bg-[var(--sp-bg)]">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-[var(--sp-accent)]/20 flex items-center justify-center">
+                            <i class='bx bx-microphone text-[var(--sp-accent)]'></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium">Character Demo</p>
+                            <p class="text-xs text-[var(--sp-muted)]">Kokoro - Clive</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="status-failed text-xs px-2 py-1 rounded-full">Failed</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Engine Status Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+        <!-- Kokoro Status -->
+        <div class="card p-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-[var(--sp-accent)]/20 flex items-center justify-center">
+                    <i class='bx bx-waves text-2xl text-[var(--sp-accent)]'></i>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-lg">Kokoro TTS</h3>
+                    <p class="text-sm text-[var(--sp-muted)]">Voice cloning & design</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-[var(--sp-success)] pulse-dot"></span>
+                <span class="text-[var(--sp-success)] font-medium">Online</span>
+            </div>
+        </div>
+
+        <!-- Qwen Status -->
+        <div class="card p-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-[var(--sp-accent2)]/20 flex items-center justify-center">
+                    <i class='bx bx-bolt text-2xl text-[var(--sp-accent2)]'></i>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-lg">Qwen TTS</h3>
+                    <p class="text-sm text-[var(--sp-muted)]">High quality synthesis</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-[var(--sp-accent2)] pulse-dot"></span>
+                <span class="text-[var(--sp-accent2)] font-medium">Online</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Load voices on page load
+    document.addEventListener('DOMContentLoaded', async function() {
+        const voiceSelect = document.getElementById('tts-voice-select');
+        try {
+            const response = await fetch('/api/tts/voices');
+            const voices = await response.json();
+            voiceSelect.innerHTML = '';
+            voices.forEach(voice => {
+                const option = document.createElement('option');
+                option.value = voice.id;
+                option.textContent = `${voice.name} (${voice.engine})`;
+                voiceSelect.appendChild(option);
+            });
+        } catch (error) {
+            voiceSelect.innerHTML = '<option value="">Failed to load voices</option>';
+            document.body.dispatchEvent(new CustomEvent('showToast', {
+                detail: { message: 'Failed to load voices', type: 'error' }
+            }));
+        }
+    });
+
+    // Handle HTMX response events
+    document.body.addEventListener('htmx:afterRequest', function(event) {
+        if (event.detail.successful) {
+            document.body.dispatchEvent(new CustomEvent('showToast', {
+                detail: { message: 'Generation complete!', type: 'success' }
+            }));
+        }
+    });
+
+    document.body.addEventListener('htmx:request-error', function(event) {
+        document.body.dispatchEvent(new CustomEvent('showToast', {
+            detail: { message: 'Request failed. Please try again.', type: 'error' }
+        }));
+    });
+</script>
+{% endblock %}

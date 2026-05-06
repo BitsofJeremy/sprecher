@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Text-to-Speech - Sprecher{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <div class="flex items-center gap-3 mb-2">
+            <div class="w-12 h-12 rounded-xl bg-[var(--sp-accent)]/20 flex items-center justify-center">
+                <i class='bx bx-microphone text-2xl text-[var(--sp-accent)]'></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold">Text-to-Speech</h1>
+                <p class="text-[var(--sp-muted)]">Generate speech from text</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TTS Form Card -->
+    <div class="card p-6">
+        <form
+            hx-post="/api/tts/sync"
+            hx-swap="innerHTML"
+            hx-target="#tts-result"
+            hx-encoding="multipart/form-data"
+            class="space-y-5"
+        >
+            <!-- Text Input -->
+            <div>
+                <label for="text" class="block text-sm font-medium text-[var(--sp-muted)] mb-2">
+                    Text
+                </label>
+                <textarea
+                    id="text"
+                    name="text"
+                    rows="6"
+                    class="w-full resize-none"
+                    placeholder="Enter text to speak..."
+                    required
+                ></textarea>
+            </div>
+
+            <!-- Voice Selection -->
+            <div>
+                <label for="voice" class="block text-sm font-medium text-[var(--sp-muted)] mb-2">
+                    Voice
+                </label>
+                <select id="voice" name="voice" class="w-full" required>
+                    <option value="">Select a voice...</option>
+                </select>
+                <p class="text-xs text-[var(--sp-muted)] mt-1">
+                    <a href="/voices" class="text-[var(--sp-accent)] hover:underline">Browse voice library</a>
+                </p>
+            </div>
+
+            <!-- Engine Selection -->
+            <div>
+                <label class="block text-sm font-medium text-[var(--sp-muted)] mb-3">
+                    Engine
+                </label>
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="card p-4 cursor-pointer border-[var(--sp-accent)] has-[:checked]:border-[var(--sp-accent)] has-[:checked]:bg-[var(--sp-accent)]/10">
+                        <div class="flex items-center gap-3">
+                            <input type="radio" name="engine" value="kokoro" checked class="sr-only">
+                            <div class="w-10 h-10 rounded-lg bg-[var(--sp-accent)]/20 flex items-center justify-center">
+                                <i class='bx bx-waves text-xl text-[var(--sp-accent)]'></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Kokoro</p>
+                                <p class="text-xs text-[var(--sp-muted)]">Voice cloning & design</p>
+                            </div>
+                        </div>
+                    </label>
+                    <label class="card p-4 cursor-pointer border-[var(--sp-border)] hover:border-[var(--sp-accent2)] has-[:checked]:border-[var(--sp-accent2)] has-[:checked]:bg-[var(--sp-accent2)]/10">
+                        <div class="flex items-center gap-3">
+                            <input type="radio" name="engine" value="qwen" class="sr-only">
+                            <div class="w-10 h-10 rounded-lg bg-[var(--sp-accent2)]/20 flex items-center justify-center">
+                                <i class='bx bx-bolt text-xl text-[var(--sp-accent2)]'></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Qwen</p>
+                                <p class="text-xs text-[var(--sp-muted)]">High quality synthesis</p>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Speed and Format Row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- Speed Slider -->
+                <div>
+                    <label for="speed" class="block text-sm font-medium text-[var(--sp-muted)] mb-2">
+                        Speed: <span id="speed-display" class="text-[var(--sp-text)]">1.0</span>x
+                    </label>
+                    <input
+                        type="range"
+                        id="speed"
+                        name="speed"
+                        min="0.5"
+                        max="2.0"
+                        step="0.1"
+                        value="1.0"
+                        class="w-full"
+                        oninput="document.getElementById('speed-display').textContent = this.value"
+                    >
+                    <div class="flex justify-between text-xs text-[var(--sp-muted)] mt-1">
+                        <span>0.5x (slow)</span>
+                        <span>2.0x (fast)</span>
+                    </div>
+                </div>
+
+                <!-- Format Selection -->
+                <div>
+                    <label for="format" class="block text-sm font-medium text-[var(--sp-muted)] mb-2">
+                        Output Format
+                    </label>
+                    <select id="format" name="format" class="w-full">
+                        <option value="mp3">MP3</option>
+                        <option value="wav">WAV (uncompressed)</option>
+                        <option value="ogg">OGG</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button
+                type="submit"
+                class="btn-primary w-full py-3.5 rounded-xl font-medium flex items-center justify-center gap-2 mt-6"
+            >
+                <span>Generate Speech</span>
+                <i class='bx bx-send'></i>
+                <span class="htmx-indicator ml-2">
+                    <i class='bx bx-loader-alt animate-spin'></i>
+                </span>
+            </button>
+        </form>
+
+        <!-- Result Area -->
+        <div id="tts-result" class="mt-6">
+            <!-- Audio player will appear here after generation -->
+        </div>
+    </div>
+
+    <!-- Tips Card -->
+    <div class="card p-5 mt-6 border-[var(--sp-accent)]/30">
+        <div class="flex items-start gap-3">
+            <i class='bx bx-lightbulb text-xl text-[var(--sp-warning)] mt-0.5'></i>
+            <div>
+                <h3 class="font-medium mb-1">Tips for best results</h3>
+                <ul class="text-sm text-[var(--sp-muted)] space-y-1">
+                    <li>Keep text under 5 minutes of audio for best quality</li>
+                    <li>Use proper punctuation to control pauses and emphasis</li>
+                    <li>Adjust speed to 0.8-1.2 for natural-sounding speech</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Load voices on page load
+    document.addEventListener('DOMContentLoaded', async function() {
+        const voiceSelect = document.getElementById('voice');
+        try {
+            const response = await fetch('/api/tts/voices');
+            if (!response.ok) throw new Error('Failed to fetch');
+            const voices = await response.json();
+            voiceSelect.innerHTML = '<option value="">Select a voice...</option>';
+            voices.forEach(voice => {
+                const option = document.createElement('option');
+                option.value = voice.id;
+                option.textContent = `${voice.name} (${voice.engine})`;
+                voiceSelect.appendChild(option);
+            });
+        } catch (error) {
+            voiceSelect.innerHTML = '<option value="">Failed to load voices</option>';
+            document.body.dispatchEvent(new CustomEvent('showToast', {
+                detail: { message: 'Failed to load voices from API', type: 'error' }
+            }));
+        }
+    });
+
+    // Success handler
+    document.body.addEventListener('htmx:afterRequest', function(event) {
+        if (event.detail.successful) {
+            const xhr = event.detail.xhr;
+            if (xhr && xhr.status === 200) {
+                document.body.dispatchEvent(new CustomEvent('showToast', {
+                    detail: { message: 'Speech generated successfully!', type: 'success' }
+                }));
+            }
+        }
+    });
+
+    // Error handler
+    document.body.addEventListener('htmx:request-error', function(event) {
+        document.body.dispatchEvent(new CustomEvent('showToast', {
+            detail: { message: 'Failed to generate speech. Please try again.', type: 'error' }
+        }));
+    });
+</script>
+{% endblock %}

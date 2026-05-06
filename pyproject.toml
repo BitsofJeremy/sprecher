@@ -1,0 +1,38 @@
+[project]
+name = "sprecher"
+version = "0.1.0"
+description = "Unified TTS/STT service combining Kokoro ONNX and Qwen3-TTS with Whisper"
+readme = "README.md"
+requires-python = ">=3.10"
+build-backend = "hatchling.build"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "aiosqlite",
+    "python-multipart",
+    "kokoro-onnx",
+    "numpy",
+    "soundfile",
+    "openai-whisper",
+    "html2text",
+    "ebooklib",
+    "beautifulsoup4",
+    "lxml",
+    "sqlalchemy",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "httpx",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.hatch.build.targets.sdist]
+include = ["app", "core", "db", "jobs", "api", "static"]

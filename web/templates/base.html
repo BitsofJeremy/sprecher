@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ page_title }}{% endblock %}</title>
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
+
+    <!-- Boxicons -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+    <!-- Custom Styles -->
+    <style>
+        /* Sprecher Design Tokens */
+        :root {
+            --sp-bg: #0c0c0f;
+            --sp-surface: #141419;
+            --sp-surface-hover: #1a1a21;
+            --sp-surface-raised: #1e1e26;
+            --sp-border: #2a2a35;
+            --sp-border-focus: #3d3d4d;
+            --sp-text: #e8e8ed;
+            --sp-text-secondary: #a8a8b8;
+            --sp-muted: #6868a0;
+            --sp-accent: #7c5cfc;
+            --sp-accent-hover: #9174fd;
+            --sp-accent-muted: rgba(124, 92, 252, 0.1);
+            --sp-accent2: #00d4aa;
+            --sp-accent2-hover: #00f0c0;
+            --sp-accent2-muted: rgba(0, 212, 170, 0.1);
+            --sp-danger: #ff5c5c;
+            --sp-warning: #ffc107;
+            --sp-success: #22c55e;
+        }
+
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--sp-border) var(--sp-surface);
+        }
+
+        *::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        *::-webkit-scrollbar-track {
+            background: var(--sp-surface);
+        }
+
+        *::-webkit-scrollbar-thumb {
+            background: var(--sp-border);
+            border-radius: 4px;
+        }
+
+        html {
+            background-color: var(--sp-bg);
+            color: var(--sp-text);
+        }
+
+        body {
+            background-color: var(--sp-bg);
+            color: var(--sp-text);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        /* Pulse animation for running status */
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .pulse-dot {
+            animation: pulse-dot 1.5s ease-in-out infinite;
+        }
+
+        /* Sidebar Logo */
+        .logo-icon {
+            background-color: var(--sp-accent);
+            border-radius: 8px;
+        }
+
+        /* Transitions */
+        .transition-smooth {
+            transition: all 0.2s ease-out;
+        }
+
+        /* Toast animations */
+        @keyframes toast-in {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes toast-out {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        .toast-enter {
+            animation: toast-in 0.3s ease-out forwards;
+        }
+
+        .toast-exit {
+            animation: toast-out 0.3s ease-out forwards;
+        }
+
+        /* Status badge styles */
+        .status-queued { background-color: rgba(255, 193, 7, 0.2); color: var(--sp-warning); }
+        .status-running { background-color: rgba(0, 212, 170, 0.2); color: var(--sp-accent2); }
+        .status-completed { background-color: rgba(34, 197, 94, 0.2); color: var(--sp-success); }
+        .status-failed { background-color: rgba(255, 92, 92, 0.2); color: var(--sp-danger); }
+
+        /* Engine badges */
+        .engine-kokoro { background-color: rgba(124, 92, 252, 0.2); color: var(--sp-accent); }
+        .engine-qwen { background-color: rgba(0, 212, 170, 0.2); color: var(--sp-accent2); }
+
+        /* Form elements */
+        input[type="text"],
+        input[type="file"],
+        textarea,
+        select {
+            background-color: var(--sp-surface);
+            border: 1px solid var(--sp-border);
+            color: var(--sp-text);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            transition: all 0.2s ease-out;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--sp-accent);
+            box-shadow: 0 0 0 3px rgba(124, 92, 252, 0.2);
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: var(--sp-muted);
+        }
+
+        /* Range slider */
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: var(--sp-border);
+            height: 6px;
+            border-radius: 3px;
+            padding: 0;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--sp-accent);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s ease-out;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        /* Custom button styles */
+        .btn-primary {
+            background-color: var(--sp-accent);
+            color: white;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            transition: background-color 0.15s ease-out;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--sp-accent-hover);
+        }
+
+        .btn-secondary {
+            background-color: var(--sp-surface);
+            border: 1px solid var(--sp-border);
+            color: var(--sp-text);
+            transition: all 0.2s ease-out;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--sp-surface-hover);
+            border-color: var(--sp-accent);
+        }
+
+        /* Nav link styles */
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: var(--sp-muted);
+            transition: all 0.2s ease-out;
+        }
+
+        .nav-link:hover {
+            background-color: var(--sp-surface-hover);
+            color: var(--sp-text);
+        }
+
+        .nav-link.active {
+            background-color: rgba(124, 92, 252, 0.15);
+            color: var(--sp-accent);
+        }
+
+        /* Card styles */
+        .card {
+            background-color: var(--sp-surface);
+            border: 1px solid var(--sp-border);
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .card:hover {
+            border-color: var(--sp-border-focus);
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            background-color: var(--sp-border);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background-color: var(--sp-accent);
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.25s ease-out;
+        }
+
+        /* HTMX indicator */
+        .htmx-indicator {
+            opacity: 0;
+            transition: opacity 0.2s ease-out;
+        }
+
+        .htmx-request .htmx-indicator {
+            opacity: 1;
+        }
+
+        .htmx-request.htmx-indicator {
+            opacity: 1;
+        }
+
+        /* Drop zone */
+        .drop-zone {
+            border: 2px dashed var(--sp-border);
+            border-radius: 0.75rem;
+            transition: all 0.2s ease-out;
+        }
+
+        .drop-zone.dragover {
+            border-color: var(--sp-accent);
+            background-color: rgba(124, 92, 252, 0.1);
+        }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen">
+    <!-- Sidebar Navigation -->
+    <aside class="fixed left-0 top-0 h-screen w-64 bg-[var(--sp-surface)] border-r border-[var(--sp-border)] flex flex-col z-50">
+        <!-- Logo -->
+        <div class="p-6 border-b border-[var(--sp-border)]">
+            <a href="/" class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg logo-icon flex items-center justify-center">
+                    <i class='bx bx-headphone text-xl text-white'></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-[var(--sp-text)]">Sprecher</h1>
+                    <p class="text-xs text-[var(--sp-muted)]">Voice Synthesis</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="flex-1 p-4 space-y-1">
+            <a href="/" class="nav-link {% if request.url.path == '/' %}active{% endif %}">
+                <i class='bx bx-home text-xl'></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/tts" class="nav-link {% if request.url.path == '/tts' %}active{% endif %}">
+                <i class='bx bx-microphone text-xl'></i>
+                <span>Quick TTS</span>
+            </a>
+            <a href="/stt" class="nav-link {% if request.url.path == '/stt' %}active{% endif %}">
+                <i class='bx bx-message-dots text-xl'></i>
+                <span>Speech-to-Text</span>
+            </a>
+            <a href="/voices" class="nav-link {% if request.url.path == '/voices' %}active{% endif %}">
+                <i class='bx bx-user-voice text-xl'></i>
+                <span>Voice Library</span>
+            </a>
+            <a href="/jobs" class="nav-link {% if request.url.path == '/jobs' or request.url.path.startswith('/jobs/') %}active{% endif %}">
+                <i class='bx bx-list-ul text-xl'></i>
+                <span>Jobs</span>
+            </a>
+        </nav>
+
+        <!-- Engine Status -->
+        <div class="p-4 border-t border-[var(--sp-border)]">
+            <p class="text-xs text-[var(--sp-muted)] uppercase tracking-wider mb-3">Engine Status</p>
+            <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm">Kokoro</span>
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-[var(--sp-success)] pulse-dot"></span>
+                        <span class="text-xs text-[var(--sp-success)]">Online</span>
+                    </span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm">Qwen</span>
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-[var(--sp-accent2)] pulse-dot"></span>
+                        <span class="text-xs text-[var(--sp-accent2)]">Online</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="ml-64 p-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-6 right-6 z-50 space-y-3">
+        <!-- Toasts will be injected here -->
+    </div>
+
+    <!-- Toast JavaScript -->
+    <script src="/web-static/js/toast.js"></script>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

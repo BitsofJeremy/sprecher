@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}Voice Library - Sprecher{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-[var(--sp-accent)]/20 flex items-center justify-center">
+                <i class='bx bx-user-voice text-2xl text-[var(--sp-accent)]'></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold">Voice Library</h1>
+                <p class="text-[var(--sp-muted)]">Manage your voice profiles</p>
+            </div>
+        </div>
+        <a href="/voice/add" class="btn-primary px-5 py-2.5 rounded-xl font-medium flex items-center gap-2">
+            <i class='bx bx-plus'></i>
+            <span>Add Voice</span>
+        </a>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="flex gap-2 mb-6 border-b border-[var(--sp-border)] pb-4">
+        <button class="px-4 py-2 rounded-lg text-sm font-medium bg-[var(--sp-accent)]/20 text-[var(--sp-accent)]">
+            All <span class="ml-1 text-xs opacity-75">(12)</span>
+        </button>
+        <button class="px-4 py-2 rounded-lg text-sm font-medium text-[var(--sp-muted)] hover:bg-[var(--sp-surface)] hover:text-[var(--sp-text)] transition-smooth">
+            Kokoro <span class="ml-1 text-xs opacity-75">(8)</span>
+        </button>
+        <button class="px-4 py-2 rounded-lg text-sm font-medium text-[var(--sp-muted)] hover:bg-[var(--sp-surface)] hover:text-[var(--sp-text)] transition-smooth">
+            Qwen <span class="ml-1 text-xs opacity-75">(4)</span>
+        </button>
+    </div>
+
+    <!-- Voice Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Voice Card 1 -->
+        <div class="card p-5 card-glow">
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--sp-accent)] to-[var(--sp-accent2)] flex items-center justify-center text-lg font-bold">
+                        P
+                    </div>
+                    <div>
+                        <h3 class="font-semibold">Pixel Paradox</h3>
+                        <p class="text-xs text-[var(--sp-muted)]">Primary narrator</p>
+                    </div>
+                </div>
+                <span class="engine-kokoro text-xs px-2 py-1 rounded-full font-medium">Kokoro</span>
+            </div>
+            <div class="flex items-center gap-2 mb-4">
+                <span class="text-xs px-2 py-1 rounded-full bg-[var(--sp-success)]/20 text-[var(--sp-success)]">cloned</span>
+                <span class="text-xs text-[var(--sp-muted)]">en-US</span>
+            </div>
+            <div class="flex gap-2">
+                <a href="/tts?voice=pixel-paradox" class="btn-primary flex-1 py-2 rounded-lg text-sm font-medium text-center">
+                    Use
+                </a>
+                <button class="btn-secondary px-3 py-2 rounded-lg text-sm">
+                    <i class='bx bx-edit'></i>
+                </button>
+                <button class="btn-secondary px-3 py-2 rounded-lg text-sm text-[var(--sp-danger)]">
+                    <i class='bx bx-trash'></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Voice Card 2 -->
+        <div class="card p-5 card-glow">
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--sp-accent2)] to-[var(--sp-accent)] flex items-center justify-center text-lg font-bold">
+                        A
+                    </div>
+                    <div>
+                        <h3 class="font-semibold">Arc</h3>
+                        <p class="text-xs text-[var(--sp-muted)]">Quantum espresso machine</p>
+                    </div>
+                </div>
+                <span class="engine-kokoro text-xs px-2 py-1 rounded-full font-medium">Kokoro</span>
+            </div>
+            <div class="flex items-center gap-2 mb-4">
+                <span class="text-xs px-2 py-1 rounded-full bg-[var(--sp-accent)]/20 text-[var(--sp-accent)]">designed</span>
+                <span class="text-xs text-[var(--sp-muted)]">en-UK</span>
+            </div>
+            <div class="flex gap-2">
+                <a href="/tts?voice=arc" class="btn-primary flex-1 py-2 rounded-lg text-sm font-medium text-center">
+                    Use
+                </a>
+                <button class="btn-secondary px-3 py-2 rounded-lg text-sm">
+                    <i class='bx bx-edit'></i>
+                </button>
+                <button class="btn-secondary px-3 py-2 rounded-lg text-sm text-[var(--sp-danger)]">
+                    <i class='bx bx-trash'></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Voice Card 3 -->
+        <div class="card p-5 card-glow">
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--sp-warning)] to-[var(--sp-danger)] flex items-center justify-center text-lg font-bold">
+                        C
+                    </div>
+                    <div>
+                        <h3 class="font-semibold">Clive</h3>
+                        <p class="text-xs text-[var(--sp-muted)]">Sentient stapler</p>
+                    </div>
+                </div>
+                <span class="engine-kokoro text-xs px-2 py-1 rounded-full font-medium">Kokoro</span>
+            </div>
+            <div class="flex items-center gap-2 mb-4">
+                <span class="text-xs px-2 py-1 rounded-full bg-[var(--sp-success)]/20 text-[var(--sp-success)]">cloned</span>
+                <span class="text-xs text-[var(--sp-muted)]">en-US</span>
+            </div>
+            <div class="flex gap-2">
+                <a href="/tts?voice=clive" class="btn-primary flex-1 py-2 rounded-lg text-sm font-medium text-center">
+                    Use
+                </a>
+                <button class="btn-secondary px-3 py-2 rounded-lg text-sm">
+                    <i class='bx bx-edit'></i>
+                </button>
+                <button class="btn-secondary px-3 py-2 rounded-lg text-sm text-[var(--sp-danger)]">
+                    <i class='bx bx-trash'></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Voice Card 4 -->
+        <div class="card p-5 card-glow">
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--sp-danger)] to-[var(--sp-accent)] flex items-center justify-center text-lg font-bold">
+                        M
+                    </div>
+                    <div>
+                        <h3 class="font-semibold">Mochi</h3>
+                        <p class="text-xs text-[var(--sp-muted)]">Builder companion</p>
+                    </div>
+                </div>
+                <span class="engine-qwen text-xs px-2 py-1 rounded-full font-medium">Qwen</span>
+            </div>
+            <div class="flex items-center gap-2 mb-4">
+                <span class="text-xs px-2 py-1 rounded-full bg-[var(--sp-accent)]/20 text-[var(--sp-accent)]">designed</span>
+                <span class="text-xs text-[var(--sp-muted)]">en-US</span>
+            </div>
+            <div class="flex gap-2">
+                <a href="/tts?voice=mochi" class="btn-primary flex-1 py-2 rounded-lg text-sm font-medium text-center">
+                    Use
+                </a>
+                <button class="btn-secondary px-3 py-2 rounded-lg text-sm">
+                    <i class='bx bx-edit'></i>
+                </button>
+                <button class="btn-secondary px-3 py-2 rounded-lg text-sm text-[var(--sp-danger)]">
+                    <i class='bx bx-trash'></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Voice Card 5 -->
+        <div class="card p-5 card-glow">
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--sp-success)] to-[var(--sp-accent2)] flex items-center justify-center text-lg font-bold">
+                        N
+                    </div>
+                    <div>
+                        <h3 class="font-semibold">Nova Prime</h3>
+                        <p class="text-xs text-[var(--sp-muted)]">Narrator voice</p>
+                    </div>
+                </div>
+                <span class="engine-qwen text-xs px-2 py-1 rounded-full font-medium">Qwen</span>
+            </div>
+            <div class="flex items-center gap-2 mb-4">
+                <span class="text-xs px-2 py-1 rounded-full bg-[var(--sp-success)]/20 text-[var(--sp-success)]">cloned</span>
+                <span class="text-xs text-[var(--sp-muted)]">en-US</span>
+            </div>
+            <div class="flex gap-2">
+                <a href="/tts?voice=nova" class="btn-primary flex-1 py-2 rounded-lg text-sm font-medium text-center">
+                    Use
+                </a>
+                <button class="btn-secondary px-3 py-2 rounded-lg text-sm">
+                    <i class='bx bx-edit'></i>
+                </button>
+                <button class="btn-secondary px-3 py-2 rounded-lg text-sm text-[var(--sp-danger)]">
+                    <i class='bx bx-trash'></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Voice Card 6 -->
+        <div class="card p-5 card-glow">
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--sp-accent)] to-[var(--sp-warning)] flex items-center justify-center text-lg font-bold">
+                        Z
+                    </div>
+                    <div>
+                        <h3 class="font-semibold">Zephyr</h3>
+                        <p class="text-xs text-[var(--sp-muted)]">Calm narrator</p>
+                    </div>
+                </div>
+                <span class="engine-qwen text-xs px-2 py-1 rounded-full font-medium">Qwen</span>
+            </div>
+            <div class="flex items-center gap-2 mb-4">
+                <span class="text-xs px-2 py-1 rounded-full bg-[var(--sp-accent)]/20 text-[var(--sp-accent)]">designed</span>
+                <span class="text-xs text-[var(--sp-muted)]">en-AU</span>
+            </div>
+            <div class="flex gap-2">
+                <a href="/tts?voice=zephyr" class="btn-primary flex-1 py-2 rounded-lg text-sm font-medium text-center">
+                    Use
+                </a>
+                <button class="btn-secondary px-3 py-2 rounded-lg text-sm">
+                    <i class='bx bx-edit'></i>
+                </button>
+                <button class="btn-secondary px-3 py-2 rounded-lg text-sm text-[var(--sp-danger)]">
+                    <i class='bx bx-trash'></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State (hidden when voices exist) -->
+    <div id="empty-state" class="hidden">
+        <div class="card p-12 text-center">
+            <div class="w-20 h-20 rounded-full bg-[var(--sp-accent)]/20 flex items-center justify-center mx-auto mb-4">
+                <i class='bx bx-user-voice text-4xl text-[var(--sp-accent)]'></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">No voices yet</h3>
+            <p class="text-[var(--sp-muted)] mb-6">Add your first voice to start generating speech.</p>
+            <a href="/voice/add" class="btn-primary px-6 py-3 rounded-xl font-medium inline-flex items-center gap-2">
+                <i class='bx bx-plus'></i>
+                <span>Add Your First Voice</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
