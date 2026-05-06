@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+
+{% block title %}Document Narration - Sprecher{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <div class="flex items-center gap-3 mb-2">
+            <div class="w-12 h-12 rounded-xl bg-[var(--sp-accent)]/20 flex items-center justify-center">
+                <i class='bx bx-book-open text-2xl text-[var(--sp-accent)]'></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold">Document Narration</h1>
+                <p class="text-[var(--sp-muted)]">Convert EPUB or TXT to spoken audio</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Narration Form Card -->
+    <div class="card p-6">
+        <form
+            hx-post="/api/narrate"
+            hx-encoding="multipart/form-data"
+            hx-disabled-elt="#narrate-submit"
+            hx-swap="none"
+            class="space-y-5"
+        >
+            <!-- File Upload / Drop Zone -->
+            <div>
+                <label class="block text-sm font-medium text-[var(--sp-muted)] mb-2">
+                    Document File
+                </label>
+                <div
+                    id="drop-zone"
+                    class="drop-zone p-8 text-center cursor-pointer"
+                    onclick="document.getElementById('document-file').click()"
+                >
+                    <input
+                        type="file"
+                        id="document-file"
+                        name="document"
+                        accept=".epub,.txt,.text"
+                        class="hidden"
+                        onchange="handleFileSelect(this)"
+                    >
+                    <div class="flex flex-col items-center gap-3">
+                        <div class="w-14 h-14 rounded-full bg-[var(--sp-accent)]/20 flex items-center justify-center">
+                            <i class='bx bx-upload text-2xl text-[var(--sp-accent)]'></i>
+                        </div>
+                        <div>
+                            <p class="font-medium">Drop document here or click to browse</p>
+                            <p class="text-sm text-[var(--sp-muted)]">Supports EPUB, TXT</p>
+                        </div>
+                    </div>
+                </div>
+                <p id="file-name" class="text-sm text-[var(--sp-muted)] mt-2 hidden"></p>
+                <div id="chapter-preview" class="mt-3 text-sm text-[var(--sp-muted)]"></div>
+            </div>
+
+            <!-- Voice Selection -->
+            <div>
+                <label for="voice_id" class="block text-sm font-medium text-[var(--sp-muted)] mb-2">
+                    Voice
+                </label>
+                <select id="voice_id" name="voice_id" class="w-full">
+                    <option value="">-- Select a voice --</option>
+                </select>
+                <p class="text-xs text-[var(--sp-muted)] mt-1">
+                    <a href="/voices" class="underline hover:text-[var(--sp-accent)]">View voice library</a>
+                </p>
+            </div>
+
+            <!-- Custom Voice Key (optional override) -->
+            <div>
+                <label for="voice_key" class="block text-sm font-medium text-[var(--sp-muted)] mb-2">
+                    Custom Voice Key <span class="text-xs text-[var(--sp-muted)]">(optional)</span>
+                </label>
+                <input
+                    type="text"
+                    id="voice_key"
+                    name="voice_key"
+                    placeholder="e.g. bf_emma or bf_isabella(0.7)+af_sarah(0.3)"
+                    class="w-full"
+                >
+                <p class="text-xs text-[var(--sp-muted)] mt-1">Override voice selection with a Kokoro voice key</p>
+            </div>
+
+            <!-- Output Format -->
+            <div>
+                <label for="audio_format" class="block text-sm font-medium text-[var(--sp-muted)] mb-2">
+                    Output Format
+                </label>
+                <select id="audio_format" name="audio_format" class="w-full">
+                    <option value="mp3">MP3</option>
+                    <option value="m4a">M4A</option>
+                    <option value="wav">WAV (uncompressed)</option>
+                </select>
+            </div>
+
+            <!-- Speed -->
+            <div>
+                <label for="speed" class="block text-sm font-medium text-[var(--sp-muted)] mb-2">
+                    Speed: <span id="speed-value">1.0x</span>
+                </label>
+                <input
+                    type="range"
+                    id="speed"
+                    name="speed"
+                    min="0.5"
+                    max="2.0"
+                    step="0.1"
+                    value="1.0"
+                    class="w-full"
+                    oninput="document.getElementById('speed-value').textContent = this.value + 'x'"
+                >
+                <div class="flex justify-between text-xs text-[var(--sp-muted)] mt-1">
+                    <span>0.5x</span>
+                    <span>1.0x</span>
+                    <span>2.0x</span>
+                </div>
+            </div>
+
+            <!-- Author -->
+            <div>
+                <label for="author" class="block text-sm font-medium text-[var(--sp-muted)] mb-2">
+                    Author <span class="text-xs text-[var(--sp-muted)]">(optional)</span>
+                </label>
+                <input
+                    type="text"
+                    id="author"
+                    name="author"
+                    placeholder="e.g. J.R.R. Tolkien"
+                    class="w-full"
+                >
+            </div>
+
+            <!-- Cover Art -->
+            <div>
+                <label for="cover_art" class="block text-sm font-medium text-[var(--sp-muted)] mb-2">
+                    Cover Art <span class="text-xs text-[var(--sp-muted)]">(optional, for MP3/M4A metadata)</span>
+                </label>
+                <input
+                    type="file"
+                    id="cover_art"
+                    name="cover_art"
+                    accept=".jpg,.jpeg,.png"
+                    class="w-full"
+                >
+            </div>
+
+            <!-- Submit Button -->
+            <button
+                type="submit"
+                id="narrate-submit"
+                class="btn-primary w-full py-3.5 rounded-xl font-medium flex items-center justify-center gap-2 mt-6"
+            >
+                <span>Start Narration</span>
+                <i class='bx bx-play'></i>
+                <span class="htmx-indicator ml-2">
+                    <i class='bx bx-loader-alt animate-spin'></i>
+                </span>
+            </button>
+        </form>
+
+        <!-- Result/Redirect Area -->
+        <div id="narrate-result" class="mt-6"></div>
+    </div>
+
+    <!-- Supported Formats -->
+    <div class="card p-5 mt-6">
+        <h3 class="font-medium mb-3 flex items-center gap-2">
+            <i class='bx bx-info-circle text-[var(--sp-accent2)]'></i>
+            Supported Formats
+        </h3>
+        <div class="grid grid-cols-2 gap-2 text-sm">
+            <div class="flex items-center gap-2 text-[var(--sp-muted)]">
+                <i class='bx bxs-file-doc'></i>
+                <span>EPUB</span>
+            </div>
+            <div class="flex items-center gap-2 text-[var(--sp-muted)]">
+                <i class='bx bxs-file-txt'></i>
+                <span>Plain Text (TXT)</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Load voices on page load
+    async function loadVoices() {
+        try {
+            const response = await fetch('/api/tts/voices');
+            const data = await response.json();
+            const select = document.getElementById('voice_id');
+            data.voices.forEach(voice => {
+                const option = document.createElement('option');
+                option.value = voice.id;
+                option.textContent = `${voice.name} (${voice.engine})`;
+                select.appendChild(option);
+            });
+        } catch (e) {
+            console.error('Failed to load voices:', e);
+        }
+    }
+    loadVoices();
+
+    // File input handler
+    function handleFileSelect(input) {
+        const fileName = document.getElementById('file-name');
+        const preview = document.getElementById('chapter-preview');
+        const dropZone = document.getElementById('drop-zone');
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            fileName.textContent = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+            fileName.classList.remove('hidden');
+            dropZone.querySelector('.flex').innerHTML = `
+                <div class="w-14 h-14 rounded-full bg-[var(--sp-success)]/20 flex items-center justify-center">
+                    <i class='bx bx-check text-2xl text-[var(--sp-success)]'></i>
+                </div>
+                <div>
+                    <p class="font-medium text-[var(--sp-success)]">${file.name}</p>
+                    <p class="text-sm text-[var(--sp-muted)]">${(file.size / 1024 / 1024).toFixed(2)} MB - Click to change</p>
+                </div>
+            `;
+
+            // Trigger preview via HTMX
+            const formData = new FormData();
+            formData.append('document', file);
+            fetch('/api/narrate/preview', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' },
+                body: formData
+            })
+            .then(r => r.json())
+            .then(data => {
+                preview.innerHTML = `
+                    <div class="mt-2 p-3 bg-[var(--sp-surface-hover)] rounded-lg">
+                        <p class="font-medium text-[var(--sp-text)]">${data.total_chapters} chapters, ${data.total_words.toLocaleString()} words</p>
+                        <details class="mt-2">
+                            <summary class="cursor-pointer text-[var(--sp-accent)] text-sm">View chapters</summary>
+                            <ul class="mt-2 space-y-1">
+                                ${data.chapters.map((ch, i) => `
+                                    <li class="flex justify-between text-xs text-[var(--sp-muted)]">
+                                        <span>${i + 1}. ${ch.title}</span>
+                                        <span>${ch.word_count} words</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </details>
+                    </div>
+                `;
+            })
+            .catch(() => {
+                preview.innerHTML = '<p class="text-[var(--sp-warning)]">Could not preview document</p>';
+            });
+        }
+    }
+
+    // Drag and drop handlers
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('document-file');
+
+    dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            handleFileSelect(fileInput);
+        }
+    });
+
+    // Form submission handler
+    document.querySelector('form').addEventListener('htmx:beforeRequest', function(event) {
+        const resultDiv = document.getElementById('narrate-result');
+        resultDiv.innerHTML = `
+            <div class="flex items-center gap-3 p-4 bg-[var(--sp-surface-hover)] rounded-lg">
+                <i class='bx bx-loader-alt animate-spin text-[var(--sp-accent)]'></i>
+                <span class="text-[var(--sp-text)]">Starting narration job...</span>
+            </div>
+        `;
+    });
+
+    document.querySelector('form').addEventListener('htmx:afterRequest', function(event) {
+        if (event.detail.successful && event.detail.xhr) {
+            try {
+                const data = JSON.parse(event.detail.xhr.responseText);
+                if (data.job_id) {
+                    window.location.href = '/jobs/' + data.job_id;
+                }
+            } catch (e) {
+                console.error('Failed to parse response:', e);
+            }
+        }
+    });
+
+    document.body.addEventListener('showToast', function(event) {
+        if (event.detail.type === 'error') {
+            document.getElementById('narrate-result').innerHTML = `
+                <div class="flex items-center gap-3 p-4 bg-[var(--sp-danger)]/10 border border-[var(--sp-danger)]/30 rounded-lg">
+                    <i class='bx bx-error text-[var(--sp-danger)]'></i>
+                    <span class="text-[var(--sp-danger)]">${event.detail.message}</span>
+                </div>
+            `;
+        }
+    });
+</script>
+{% endblock %}

@@ -81,3 +81,13 @@ async def job_detail_page(request: Request, job_id: str) -> HTMLResponse:
         name="job_detail.html",
         context={"page_title": f"Job {job_id} - Sprecher", "job_id": job_id},
     )
+
+
+@web_router.get("/narrate")
+async def narrate_page(request: Request) -> HTMLResponse:
+    """Document narration page."""
+    return templates.TemplateResponse(
+        request=request,
+        name="narrate.html",
+        context={"page_title": "Document Narration - Sprecher"},
+    )

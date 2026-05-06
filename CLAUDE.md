@@ -46,15 +46,26 @@ Browser (HTMX) ──> FastAPI (async, aiosqlite) ──> SQLite
 
 | Endpoint | Method | Description |
 |---|---|---|
+| `/api/health` | GET | Health check (no auth required) |
 | `/api/tts/sync` | POST | Synchronous TTS generation |
-| `/api/tts/async` | POST | Async TTS job submission |
+| `/api/tts` | POST | Async TTS job submission |
 | `/api/tts/voices` | GET | List Kokoro voices |
 | `/api/tts/engines` | GET | Engine capabilities |
 | `/api/tts/jobs` | GET | List TTS jobs |
-| `/api/tts/jobs/{id}` | GET | Get job status |
+| `/api/tts/jobs/{id}` | GET | Get TTS job status |
 | `/api/stt/sync` | POST | Synchronous STT transcription |
 | `/api/stt/async` | POST | Async STT job submission |
-| `/api/health` | GET | Health check (no auth required) |
+| `/api/stt/jobs` | GET | List STT jobs |
+| `/api/stt/jobs/{id}` | GET | Get STT job status |
+| `/api/voices` | GET | List voices (filter: engine, type) |
+| `/api/voices` | POST | Create voice |
+| `/api/voices/{id}` | GET | Get voice |
+| `/api/voices/{id}` | PUT | Update voice |
+| `/api/voices/{id}` | DELETE | Delete voice |
+| `/api/narrate` | POST | Start document narration job |
+| `/api/narrate/jobs` | GET | List narration jobs |
+| `/api/narrate/jobs/{id}` | GET | Get narration job status |
+| `/api/narrate/preview` | POST | Preview document chapters |
 
 ## Auth
 
@@ -86,60 +97,79 @@ All env vars use the `SPRECHER_` prefix:
 ```
 sprecher/
 ├── app/
+│   ├── __init__.py
 │   ├── main.py              # FastAPI entry point
 │   └── lifespan.py          # startup/shutdown events
-├── app.py                  # Entry point script
+├── app.py                   # Entry point script
 ├── config.py               # Settings via SPRECHER_ env vars
 ├── pyproject.toml          # All dependencies
 ├── CLAUDE.md               # This file
+├── README.md               # Quick start
+├── PRODUCT.md              # Design context
+├── DESIGN.md               # Design tokens
 ├── mcp/
-│   └── server.py           # MCP server for Claude Code agents
+│   └── server.py           # MCP server (stdio transport)
 ├── scripts/
-│   └── install.sh          # Systemd + Nginx installer
+│   └── install.sh          # systemd + nginx installer
 ├── .claude/
-│   ├── settings.json       # MCP server config
+│   ├── settings.json       # MCP client config
 │   └── skills/
 │       └── sprecher.md     # Agent skill for AI agents
 ├── core/
 │   ├── engine_router.py    # TTS engine selection
 │   ├── tts/
-│   │   ├── base.py         # Abstract TTS engine interface
-│   │   └── kokoro_engine.py  # Kokoro ONNX TTS
-│   └── stt/
-│       └── whisper_engine.py  # Whisper STT
+│   │   ├── __init__.py
+│   │   ├── base.py         # Abstract TTSEngine ABC
+│   │   ├── kokoro_engine.py  # Kokoro ONNX TTS
+│   │   └── qwen_engine.py    # Qwen3-TTS (stub/CPU)
+│   ├── stt/
+│   │   ├── __init__.py
+│   │   └── whisper_engine.py  # Whisper STT
+│   └── narrate/
+│       ├── __init__.py
+│       ├── parsers.py      # EPUB/TXT document parsers
+│       ├── chunker.py      # Sentence-boundary chunker
+│       └── assembler.py    # Audio assembler + ID3 tags
 ├── db/
+│   ├── __init__.py
 │   ├── schema.py           # SQLite schema
 │   ├── get_db.py           # aiosqlite context manager
-│   └── seed_data.py        # Seed voices + system presets
+│   ├── seed_data.py        # Seed voices + system presets
+│   ├── voices.py           # Voice CRUD operations
+│   └── jobs.py             # Job CRUD operations
 ├── jobs/
-│   ├── models.py           # Job data classes
+│   ├── __init__.py
+│   ├── models.py           # JobStatus, TTSJob, NarrateJob
 │   ├── queue.py            # In-process job runner
-│   └── tasks.py            # Sync job handlers
+│   └── tasks.py            # TTS/STT/Narrate task handlers
 ├── api/
+│   ├── __init__.py
 │   ├── router.py           # Route aggregator
-│   ├── tts.py              # TTS endpoints
-│   ├── stt.py              # STT endpoints
-│   └── health.py           # Health check
+│   ├── health.py           # GET /api/health
+│   ├── tts.py             # TTS endpoints
+│   ├── stt.py             # STT endpoints
+│   ├── voices.py          # Voice CRUD endpoints
+│   └── narrate.py         # Narration endpoints
 ├── web/
+│   ├── __init__.py
 │   ├── router.py           # Web route aggregator
-│   ├── templates/          # Jinja2 templates
-│   │   ├── base.html      # Layout with sidebar nav
-│   │   ├── dashboard.html # Home dashboard
-│   │   ├── tts.html       # Quick TTS form
-│   │   ├── stt.html       # Speech-to-text form
-│   │   ├── voices.html    # Voice library
-│   │   ├── jobs.html      # Job list
-│   │   └── job_detail.html # Job detail + progress
+│   ├── templates/
+│   │   ├── base.html       # Layout with sidebar nav
+│   │   ├── dashboard.html
+│   │   ├── tts.html
+│   │   ├── stt.html
+│   │   ├── voices.html
+│   │   ├── jobs.html
+│   │   ├── job_detail.html
+│   │   └── narrate.html
 │   └── static/
-│       ├── css/style.css   # Dark theme CSS
-│       └── js/toast.js     # Toast notifications
-├── data/                   # Runtime data (gitignored)
-│   ├── uploads/           # Uploaded audio/files
-│   ├── chunks/            # Processing chunks
-│   ├── output/           # Generated audio
-│   └── voices/           # Voice reference audio
-└── static/
-    └── css/style.css      # App CSS (legacy)
+│       ├── css/style.css
+│       └── js/toast.js
+└── data/                   # Runtime data (gitignored)
+    ├── uploads/
+    ├── chunks/
+    ├── output/
+    └── voices/
 ```
 
 ## Kokoro Voice Blending

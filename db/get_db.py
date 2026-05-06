@@ -1,15 +1,15 @@
 """Database connection management with aiosqlite."""
 
-from contextlib import contextmanager
-from typing import Generator
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 
 import aiosqlite
 
 import config
 
 
-@contextmanager
-async def get_db() -> Generator[aiosqlite.Connection, None, None]:
+@asynccontextmanager
+async def get_db() -> AsyncGenerator[aiosqlite.Connection, None]:
     """Get async database connection with WAL mode."""
     db = await aiosqlite.connect(config.DB_PATH)
     db.row_factory = aiosqlite.Row

@@ -4,10 +4,12 @@ from typing import Optional
 
 from core.tts.base import TTSEngine
 from core.tts.kokoro_engine import KokoroEngine, get_kokoro_engine
+from core.tts.qwen_engine import QwenEngine, get_qwen_engine
 
-# For now, only Kokoro is implemented. Qwen will be added later.
+# Available TTS engines
 AVAILABLE_ENGINES = {
     "kokoro": KokoroEngine,
+    "qwen": QwenEngine,
 }
 
 

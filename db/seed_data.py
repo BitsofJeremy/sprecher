@@ -1,5 +1,6 @@
 """Seed database with Kokoro preset voices and system voices."""
 
+import aiosqlite
 from typing import Any
 
 # Kokoro voice list from kokoro-hook with metadata

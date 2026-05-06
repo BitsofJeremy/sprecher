@@ -108,3 +108,182 @@ async def tts_engines(authorization: Optional[str] = Header(None)):
     engines = router_instance.list_engines()
 
     return JSONResponse({"engines": engines})
+
+
+@router.post("/tts")
+async def tts_async(
+    text: str = Form(...),
+    voice: str = Form(default="bf_isabella"),
+    engine: str = Form(default="kokoro"),
+    speed: float = Form(default=1.0),
+    audio_format: str = Form(default="wav"),
+    title: str = Form(default="TTS Job"),
+    author: str = Form(default=""),
+    authorization: Optional[str] = Header(None),
+):
+    """
+    Submit an async TTS job for processing.
+
+    Returns job ID for tracking via GET /api/tts/jobs/{id}.
+    """
+    await verify_api_key(authorization)
+
+    if not text:
+        raise HTTPException(status_code=400, detail="Text is required")
+
+    # Get engine and validate voice
+    if engine == "kokoro":
+        kokoro = get_kokoro_engine()
+        if not kokoro.validate_voice(voice):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid voice: '{voice}'. Use /api/tts/voices to list available voices."
+            )
+    elif engine == "qwen":
+        from core.tts.qwen_engine import get_qwen_engine
+        qwen = get_qwen_engine()
+        if not qwen.validate_voice(voice):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid voice: '{voice}'. Use /api/tts/voices to list available voices."
+            )
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Engine '{engine}' not supported. Use 'kokoro' or 'qwen'."
+        )
+
+    # Create job in database
+    from db.jobs import create_job
+    job_id = await create_job(
+        title=title,
+        engine=engine,
+        voice_key=voice,
+        status="queued",
+        scope="tts",
+        source_path=text,
+        audio_format=audio_format,
+        speed=speed,
+        author=author,
+    )
+
+    # Queue the job for async processing
+    from jobs.queue import get_job_runner
+    runner = get_job_runner()
+
+    # Prepare job data
+    from jobs.models import TTSJob, JobStatus
+    job = TTSJob(
+        id=job_id,
+        title=title,
+        engine=engine,
+        voice_key=voice,
+        status=JobStatus.QUEUED,
+        source_path=text,
+        audio_format=audio_format,
+        speed=speed,
+        author=author,
+    )
+
+    # Enqueue for async processing
+    await runner.enqueue(_process_tts_job, job)
+
+    return JSONResponse({
+        "job_id": job_id,
+        "status": "queued",
+        "message": "TTS job submitted successfully",
+    })
+
+
+async def _process_tts_job(job: "TTSJob") -> str:
+    """Internal function to process a TTS job."""
+    from jobs.tasks import run_tts_task
+    from db.jobs import complete_job, fail_job, update_job
+    import uuid
+
+    try:
+        # Update job status to running
+        await update_job(job.id, status="running", progress=0)
+
+        # Get engine and generate
+        if job.engine == "kokoro":
+            from core.tts.kokoro_engine import get_kokoro_engine
+            engine = get_kokoro_engine()
+        else:
+            from core.tts.qwen_engine import get_qwen_engine
+            engine = get_qwen_engine()
+
+        # Generate output path if not set
+        output_path = job.output_path
+        if not output_path:
+            output_path = str(config.WORK_DIR / "data" / "output" / f"{uuid.uuid4().hex[:12]}.{job.audio_format}")
+
+        await engine.generate_to_file(
+            text=job.source_path,
+            voice=job.voice_key,
+            output_path=Path(output_path),
+            speed=job.speed,
+            audio_format=job.audio_format,
+        )
+
+        # Mark complete
+        await complete_job(job.id, output_path)
+        return output_path
+
+    except Exception as e:
+        await fail_job(job.id, str(e))
+        raise
+
+
+@router.get("/tts/jobs")
+async def tts_list_jobs(
+    limit: int = 50,
+    offset: int = 0,
+    status: Optional[str] = None,
+    engine: Optional[str] = None,
+    authorization: Optional[str] = Header(None),
+):
+    """
+    List TTS jobs with optional filters.
+
+    - **limit**: Maximum number of results (default 50)
+    - **offset**: Pagination offset
+    - **status**: Filter by status (queued, running, completed, failed)
+    - **engine**: Filter by engine (kokoro, qwen)
+    """
+    await verify_api_key(authorization)
+
+    from db.jobs import list_jobs
+    jobs = await list_jobs(
+        limit=limit,
+        offset=offset,
+        status=status,
+        engine=engine,
+        scope="tts",
+    )
+
+    return JSONResponse({"jobs": jobs})
+
+
+@router.get("/tts/jobs/{job_id}")
+async def tts_get_job(
+    job_id: int,
+    authorization: Optional[str] = Header(None),
+):
+    """
+    Get TTS job status and details.
+
+    Returns job info including status, progress, and output path if completed.
+    """
+    await verify_api_key(authorization)
+
+    from db.jobs import get_job
+    job = await get_job(job_id)
+
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    if job.get("scope") != "tts":
+        raise HTTPException(status_code=404, detail="Job is not a TTS job")
+
+    return JSONResponse(job)

@@ -51,7 +51,87 @@ Response:
 }
 ```
 
-### Voice Blending
+### Async TTS (job queue)
+
+```bash
+# Submit job
+curl -X POST $SPRECHER_BASE_URL/api/tts \
+  -H "Authorization: Bearer $SPRECHER_API_KEY" \
+  -d "text=Long text to narrate&voice=bf_emma"
+
+# Check status
+curl $SPRECHER_BASE_URL/api/tts/jobs/1 \
+  -H "Authorization: Bearer $SPRECHER_API_KEY"
+
+# List all TTS jobs
+curl $SPRECHER_BASE_URL/api/tts/jobs \
+  -H "Authorization: Bearer $SPRECHER_API_KEY"
+```
+
+## Voice Library CRUD
+
+```bash
+# List voices
+curl $SPRECHER_BASE_URL/api/voices
+
+# Create voice
+curl -X POST $SPRECHER_BASE_URL/api/voices \
+  -H "Authorization: Bearer $SPRECHER_API_KEY" \
+  -d '{"name":"Pixel","engine":"kokoro","voice_type":"preset","voice_key":"bf_emma"}'
+
+# Get voice
+curl $SPRECHER_BASE_URL/api/voices/1
+
+# Update voice
+curl -X PUT $SPRECHER_BASE_URL/api/voices/1 \
+  -H "Authorization: Bearer $SPRECHER_API_KEY" \
+  -d '{"name":"Pixel Paradox"}'
+
+# Delete voice
+curl -X DELETE $SPRECHER_BASE_URL/api/voices/1 \
+  -H "Authorization: Bearer $SPRECHER_API_KEY"
+```
+
+## STT Usage
+
+### Synchronous STT
+
+```bash
+curl -X POST $SPRECHER_BASE_URL/api/stt/sync \
+  -H "Authorization: Bearer $SPRECHER_API_KEY" \
+  -F "audio_file=@recording.wav"
+```
+
+### Async STT (job queue)
+
+```bash
+# Submit
+curl -X POST $SPRECHER_BASE_URL/api/stt/async \
+  -H "Authorization: Bearer $SPRECHER_API_KEY" \
+  -F "audio_file=@recording.wav"
+
+# Check status
+curl $SPRECHER_BASE_URL/api/stt/jobs/1
+```
+
+## Document Narration
+
+```bash
+# Preview chapters
+curl -X POST $SPRECHER_BASE_URL/api/narrate/preview \
+  -H "Authorization: Bearer $SPRECHER_API_KEY" \
+  -F "file=@book.epub"
+
+# Start narration job
+curl -X POST $SPRECHER_BASE_URL/api/narrate \
+  -H "Authorization: Bearer $SPRECHER_API_KEY" \
+  -d '{"source_path":"/path/to/book.epub","voice_key":"bf_emma","author":"Author Name"}'
+
+# Check narration job
+curl $SPRECHER_BASE_URL/api/narrate/jobs/1
+```
+
+## Voice Blending
 
 Kokoro supports voice blending for unique sounds:
 
@@ -67,7 +147,7 @@ bm_george(0.8)+bf_alice(0.2)  # 80% George, 20% Alice
 | `bf_` | British Female | bf_isabella, bf_emma, bf_sarah |
 | `af_` | American Female | af_bella, af_nicole, af_sarah |
 | `am_` | American Male | am_adam, am_michael, am_eric |
-| `bm_` | British Male | bm_lewis, bm_george |
+| `zm_` | Male | zm_alex, zm_david |
 
 ## STT Usage
 

@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS jobs (
     error_message TEXT,
     author TEXT NOT NULL DEFAULT '',
     cover_path TEXT NOT NULL DEFAULT '',
+    language TEXT NOT NULL DEFAULT '',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     completed_at TIMESTAMP
 );
