@@ -190,7 +190,7 @@
     // Load voices on page load
     async function loadVoices() {
         try {
-            const response = await fetch('/api/tts/voices');
+            const response = await fetch('/api/voices');
             const data = await response.json();
             const select = document.getElementById('voice_id');
             data.voices.forEach(voice => {
@@ -229,7 +229,6 @@
             formData.append('document', file);
             fetch('/api/narrate/preview', {
                 method: 'POST',
-                headers: { 'Authorization': 'Bearer ' },
                 body: formData
             })
             .then(r => r.json())

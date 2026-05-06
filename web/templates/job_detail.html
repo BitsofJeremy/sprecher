@@ -3,7 +3,7 @@
 {% block title %}Job {{ job_id }} - Sprecher{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
+<div class="max-w-4xl mx-auto" x-data="jobDetail()" x-init="init()">
     <!-- Page Header -->
     <div class="mb-8">
         <a href="/jobs" class="inline-flex items-center gap-1 text-sm text-[var(--sp-muted)] hover:text-[var(--sp-accent)] mb-4 transition-smooth">
@@ -16,14 +16,14 @@
                     <i class='bx bx-microphone text-2xl text-[var(--sp-accent)]'></i>
                 </div>
                 <div>
-                    <h1 class="text-2xl font-bold">Chapter 1 Narration</h1>
+                    <h1 class="text-2xl font-bold" x-text="job?.title || 'Loading...'">Loading...</h1>
                     <p class="text-[var(--sp-muted)]">Job #{{ job_id }}</p>
                 </div>
             </div>
             <div class="flex items-center gap-3">
-                <span class="status-running text-sm px-3 py-1.5 rounded-full">
-                    <span class="pulse-dot inline-block w-2 h-2 rounded-full bg-current mr-2"></span>
-                    Running
+                <span :class="'status-' + job?.status" class="text-sm px-3 py-1.5 rounded-full">
+                    <span class="pulse-dot inline-block w-2 h-2 rounded-full bg-current mr-2" x-show="job?.status === 'running' || job?.status === 'queued'"></span>
+                    <span x-text="job?.status || 'loading'">Loading...</span>
                 </span>
             </div>
         </div>
@@ -41,23 +41,23 @@
                 <div class="mb-4">
                     <div class="flex justify-between text-sm mb-2">
                         <span class="text-[var(--sp-muted)]">Overall Progress</span>
-                        <span class="font-medium">67%</span>
+                        <span class="font-medium" x-text="(job?.progress || 0) + '%'">0%</span>
                     </div>
                     <div class="progress-bar h-3">
-                        <div class="progress-bar-fill" style="width: 67%"></div>
+                        <div class="progress-bar-fill" :style="'width: ' + (job?.progress || 0) + '%'"></div>
                     </div>
                 </div>
                 <div class="grid grid-cols-3 gap-4 text-center">
                     <div class="p-3 rounded-lg bg-[var(--sp-bg)]">
-                        <p class="text-2xl font-bold text-[var(--sp-accent2)]">12</p>
+                        <p class="text-2xl font-bold text-[var(--sp-accent2)]" x-text="job?.completed_chunks || 0">0</p>
                         <p class="text-xs text-[var(--sp-muted)]">Chunks Done</p>
                     </div>
                     <div class="p-3 rounded-lg bg-[var(--sp-bg)]">
-                        <p class="text-2xl font-bold">6</p>
+                        <p class="text-2xl font-bold" x-text="(job?.total_chunks || 0) - (job?.completed_chunks || 0)">0</p>
                         <p class="text-xs text-[var(--sp-muted)]">Chunks Left</p>
                     </div>
                     <div class="p-3 rounded-lg bg-[var(--sp-bg)]">
-                        <p class="text-2xl font-bold">2:34</p>
+                        <p class="text-2xl font-bold" x-text="elapsedTime">--:--</p>
                         <p class="text-xs text-[var(--sp-muted)]">Elapsed</p>
                     </div>
                 </div>
@@ -73,28 +73,28 @@
                     <div>
                         <p class="text-sm text-[var(--sp-muted)]">Engine</p>
                         <p class="font-medium flex items-center gap-2 mt-1">
-                            <span class="engine-kokoro text-xs px-2 py-1 rounded-full font-medium">Kokoro</span>
+                            <span :class="'engine-' + (job?.engine || 'kokoro').toLowerCase()" class="text-xs px-2 py-1 rounded-full font-medium" x-text="job?.engine || 'Kokoro'">Kokoro</span>
                         </p>
                     </div>
                     <div>
                         <p class="text-sm text-[var(--sp-muted)]">Voice</p>
-                        <p class="font-medium mt-1">Pixel Paradox</p>
+                        <p class="font-medium mt-1" x-text="job?.voice_key || 'Default'">Default</p>
                     </div>
                     <div>
                         <p class="text-sm text-[var(--sp-muted)]">Format</p>
-                        <p class="font-medium mt-1">MP3</p>
+                        <p class="font-medium mt-1" x-text="(job?.audio_format || 'mp3').toUpperCase()">MP3</p>
                     </div>
                     <div>
                         <p class="text-sm text-[var(--sp-muted)]">Speed</p>
-                        <p class="font-medium mt-1">1.0x</p>
+                        <p class="font-medium mt-1" x-text="(job?.speed || 1.0) + 'x'">1.0x</p>
                     </div>
                     <div>
                         <p class="text-sm text-[var(--sp-muted)]">Created</p>
-                        <p class="font-medium mt-1">May 5, 2026 at 2:34 PM</p>
+                        <p class="font-medium mt-1" x-text="formatDate(job?.created_at)">--</p>
                     </div>
                     <div>
-                        <p class="text-sm text-[var(--sp-muted)]">Estimated Time</p>
-                        <p class="font-medium mt-1">~4 minutes remaining</p>
+                        <p class="text-sm text-[var(--sp-muted)]">Scope</p>
+                        <p class="font-medium mt-1" x-text="job?.scope || 'TTS'">TTS</p>
                     </div>
                 </div>
             </div>
@@ -103,73 +103,33 @@
             <div class="card p-6">
                 <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
                     <i class='bx bx-list-ul text-[var(--sp-accent)]'></i>
-                    Chapters
+                    Segments
                 </h2>
-                <div class="space-y-2">
-                    <!-- Completed Chapter -->
-                    <div class="flex items-center gap-3 p-3 rounded-lg bg-[var(--sp-bg)]">
-                        <div class="w-8 h-8 rounded-full bg-[var(--sp-success)]/20 flex items-center justify-center">
-                            <i class='bx bx-check text-[var(--sp-success)]'></i>
-                        </div>
-                        <div class="flex-1">
-                            <p class="font-medium text-sm">Chapter 1 - The Beginning</p>
-                            <p class="text-xs text-[var(--sp-muted)]">1,247 words</p>
-                        </div>
-                        <span class="text-xs text-[var(--sp-success)]">Completed</span>
+                <template x-if="!job?.chapters || job.chapters.length === 0">
+                    <div class="text-center py-8 text-[var(--sp-muted)]">
+                        <i class='bx bx-inbox text-4xl mb-2'></i>
+                        <p>No segment data available</p>
                     </div>
-
-                    <!-- Completed Chapter -->
-                    <div class="flex items-center gap-3 p-3 rounded-lg bg-[var(--sp-bg)]">
-                        <div class="w-8 h-8 rounded-full bg-[var(--sp-success)]/20 flex items-center justify-center">
-                            <i class='bx bx-check text-[var(--sp-success)]'></i>
-                        </div>
-                        <div class="flex-1">
-                            <p class="font-medium text-sm">Chapter 2 - Discovery</p>
-                            <p class="text-xs text-[var(--sp-muted)]">892 words</p>
-                        </div>
-                        <span class="text-xs text-[var(--sp-success)]">Completed</span>
-                    </div>
-
-                    <!-- Running Chapter -->
-                    <div class="flex items-center gap-3 p-3 rounded-lg bg-[var(--sp-accent)]/10 border border-[var(--sp-accent)]/30">
-                        <div class="w-8 h-8 rounded-full bg-[var(--sp-accent)]/20 flex items-center justify-center">
-                            <i class='bx bx-loader-alt text-[var(--sp-accent)] animate-spin'></i>
-                        </div>
-                        <div class="flex-1">
-                            <p class="font-medium text-sm">Chapter 3 - The Journey</p>
-                            <p class="text-xs text-[var(--sp-muted)]">1,103 words</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <div class="progress-bar w-16 h-1.5">
-                                <div class="progress-bar-fill" style="width: 67%"></div>
+                </template>
+                <div class="space-y-2" x-show="job?.chapters && job.chapters.length > 0">
+                    <template x-for="(chapter, idx) in job?.chapters || []" :key="idx">
+                        <div class="flex items-center gap-3 p-3 rounded-lg bg-[var(--sp-bg)]" :class="{'opacity-60': chapter.status === 'pending'}">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center" :class="chapter.status === 'completed' ? 'bg-[var(--sp-success)]/20' : chapter.status === 'running' ? 'bg-[var(--sp-accent)]/20' : 'bg-[var(--sp-border)]'">
+                                <i :class="chapter.status === 'completed' ? 'bx-check text-[var(--sp-success)]' : chapter.status === 'running' ? 'bx-loader-alt text-[var(--sp-accent)] animate-spin' : 'bx-time text-[var(--sp-muted)]'"></i>
                             </div>
-                            <span class="text-xs text-[var(--sp-accent2)]">67%</span>
+                            <div class="flex-1">
+                                <p class="font-medium text-sm" x-text="chapter.title || 'Segment ' + (idx + 1)">Segment</p>
+                                <p class="text-xs text-[var(--sp-muted)]" x-text="(chapter.word_count || 0) + ' words'">0 words</p>
+                            </div>
+                            <div class="flex items-center gap-2" x-show="chapter.status === 'running'">
+                                <div class="progress-bar w-16 h-1.5">
+                                    <div class="progress-bar-fill" :style="'width: ' + (chapter.progress || 0) + '%'"></div>
+                                </div>
+                                <span class="text-xs text-[var(--sp-accent2)]" x-text="(chapter.progress || 0) + '%'">0%</span>
+                            </div>
+                            <span class="text-xs" :class="chapter.status === 'completed' ? 'text-[var(--sp-success)]' : 'text-[var(--sp-muted)]'" x-text="chapter.status || 'pending'">Pending</span>
                         </div>
-                    </div>
-
-                    <!-- Pending Chapter -->
-                    <div class="flex items-center gap-3 p-3 rounded-lg bg-[var(--sp-bg)] opacity-60">
-                        <div class="w-8 h-8 rounded-full bg-[var(--sp-border)] flex items-center justify-center">
-                            <i class='bx bx-time text-[var(--sp-muted)]'></i>
-                        </div>
-                        <div class="flex-1">
-                            <p class="font-medium text-sm">Chapter 4 - Resolution</p>
-                            <p class="text-xs text-[var(--sp-muted)]">956 words</p>
-                        </div>
-                        <span class="text-xs text-[var(--sp-muted)]">Pending</span>
-                    </div>
-
-                    <!-- Pending Chapter -->
-                    <div class="flex items-center gap-3 p-3 rounded-lg bg-[var(--sp-bg)] opacity-60">
-                        <div class="w-8 h-8 rounded-full bg-[var(--sp-border)] flex items-center justify-center">
-                            <i class='bx bx-time text-[var(--sp-muted)]'></i>
-                        </div>
-                        <div class="flex-1">
-                            <p class="font-medium text-sm">Chapter 5 - Epilogue</p>
-                            <p class="text-xs text-[var(--sp-muted)]">634 words</p>
-                        </div>
-                        <span class="text-xs text-[var(--sp-muted)]">Pending</span>
-                    </div>
+                    </template>
                 </div>
             </div>
         </div>
@@ -181,16 +141,23 @@
                 <h3 class="font-semibold mb-4">Actions</h3>
                 <div class="space-y-2">
                     <button
-                        hx-post="/api/jobs/{{ job_id }}/cancel"
+                        hx-get="/api/jobs/{{ job_id }}/cancel"
                         hx-swap="none"
+                        :disabled="job?.status === 'completed' || job?.status === 'failed' || job?.status === 'cancelled'"
                         class="btn-secondary w-full py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2"
+                        :class="{'opacity-50 cursor-not-allowed': job?.status === 'completed' || job?.status === 'failed' || job?.status === 'cancelled'}"
                     >
                         <i class='bx bx-x'></i>
                         <span>Cancel Job</span>
                     </button>
-                    <button class="btn-secondary w-full py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 text-[var(--sp-muted)]" disabled>
+                    <button
+                        @click="downloadOutput()"
+                        :disabled="job?.status !== 'completed' || !job?.output_path"
+                        class="btn-secondary w-full py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2"
+                        :class="{'text-[var(--sp-muted)] cursor-not-allowed opacity-50': job?.status !== 'completed' || !job?.output_path}"
+                    >
                         <i class='bx bx-download'></i>
-                        <span>Download (when complete)</span>
+                        <span x-text="job?.status === 'completed' ? 'Download' : 'Download (when complete)'">Download (when complete)</span>
                     </button>
                 </div>
             </div>
@@ -198,10 +165,20 @@
             <!-- Output Preview Card -->
             <div class="card p-5">
                 <h3 class="font-semibold mb-4">Output Preview</h3>
-                <div class="p-8 rounded-lg bg-[var(--sp-bg)] text-center">
+                <div class="p-8 rounded-lg bg-[var(--sp-bg)] text-center" x-show="job?.status !== 'completed'">
                     <i class='bx bx-music text-4xl text-[var(--sp-muted)] mb-2'></i>
                     <p class="text-sm text-[var(--sp-muted)]">Audio will appear here when complete</p>
                 </div>
+                <div class="rounded-lg bg-[var(--sp-bg)] text-center p-4" x-show="job?.status === 'completed' && job?.output_path">
+                    <i class='bx bx-check-circle text-4xl text-[var(--sp-success)] mb-2'></i>
+                    <p class="text-sm font-medium text-[var(--sp-success)]">Ready for download</p>
+                </div>
+            </div>
+
+            <!-- Error Card -->
+            <div class="card p-5" x-show="job?.error_message">
+                <h3 class="font-semibold mb-4 text-[var(--sp-error)]">Error</h3>
+                <div class="p-3 rounded-lg bg-[var(--sp-error)]/10 text-sm text-[var(--sp-error)]" x-text="job?.error_message"></div>
             </div>
 
             <!-- Activity Log Card -->
@@ -209,31 +186,10 @@
                 <h3 class="font-semibold mb-4">Activity</h3>
                 <div class="space-y-3 text-sm">
                     <div class="flex items-start gap-2">
-                        <span class="w-2 h-2 rounded-full bg-[var(--sp-accent2)] mt-1.5"></span>
-                        <div>
-                            <p>Processing Chapter 3</p>
-                            <p class="text-xs text-[var(--sp-muted)]">2:34 elapsed</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-2">
-                        <span class="w-2 h-2 rounded-full bg-[var(--sp-success)] mt-1.5"></span>
-                        <div>
-                            <p>Completed Chapter 2</p>
-                            <p class="text-xs text-[var(--sp-muted)]">2:12 - 0:22</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-2">
-                        <span class="w-2 h-2 rounded-full bg-[var(--sp-success)] mt-1.5"></span>
-                        <div>
-                            <p>Completed Chapter 1</p>
-                            <p class="text-xs text-[var(--sp-muted)]">1:50 - 0:38</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-2">
                         <span class="w-2 h-2 rounded-full bg-[var(--sp-accent)] mt-1.5"></span>
                         <div>
                             <p>Job started</p>
-                            <p class="text-xs text-[var(--sp-muted)]">May 5, 2:34 PM</p>
+                            <p class="text-xs text-[var(--sp-muted)]" x-text="formatDate(job?.created_at)">--</p>
                         </div>
                     </div>
                 </div>
@@ -242,29 +198,71 @@
     </div>
 </div>
 
-<!-- HTMX Progress Polling -->
 <script>
-    // Poll for progress updates every 3 seconds
-    setInterval(async function() {
-        try {
-            const response = await fetch('/api/jobs/{{ job_id }}/progress');
-            if (response.ok) {
-                const data = await response.json();
-                // Update progress bar
-                const progressFill = document.querySelector('.progress-bar-fill');
-                if (progressFill && data.progress !== undefined) {
-                    progressFill.style.width = data.progress + '%';
+function jobDetail() {
+    return {
+        job: null,
+        startTime: null,
+        elapsedTime: '--:--',
+
+        async init() {
+            await this.loadJob();
+            this.startTime = this.job?.created_at ? new Date(this.job.created_at) : new Date();
+            this.updateElapsed();
+            setInterval(() => this.updateElapsed(), 1000);
+            this.pollProgress();
+        },
+
+        async loadJob() {
+            try {
+                const response = await fetch('/api/jobs/{{ job_id }}');
+                if (response.ok) {
+                    this.job = await response.json();
                 }
-                // Update status if job completed or failed
-                if (data.status === 'completed') {
-                    window.location.reload();
-                } else if (data.status === 'failed') {
-                    window.location.reload();
-                }
+            } catch (error) {
+                console.error('Failed to load job:', error);
             }
-        } catch (error) {
-            // Silently fail - will retry on next interval
+        },
+
+        async pollProgress() {
+            setInterval(async () => {
+                try {
+                    const response = await fetch('/api/jobs/{{ job_id }}/progress');
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.job = { ...this.job, ...data };
+
+                        if (data.status === 'completed' || data.status === 'failed' || data.status === 'cancelled') {
+                            window.location.reload();
+                        }
+                    }
+                } catch (error) {
+                    // Silently fail
+                }
+            }, 3000);
+        },
+
+        updateElapsed() {
+            if (!this.startTime) return;
+            const now = new Date();
+            const diff = Math.floor((now - this.startTime) / 1000);
+            const mins = Math.floor(diff / 60);
+            const secs = diff % 60;
+            this.elapsedTime = `${mins}:${secs.toString().padStart(2, '0')}`;
+        },
+
+        formatDate(dateStr) {
+            if (!dateStr) return '--';
+            const date = new Date(dateStr);
+            return date.toLocaleString();
+        },
+
+        downloadOutput() {
+            if (this.job?.output_path) {
+                window.location.href = '/api/download/' + this.job.output_path;
+            }
         }
-    }, 3000);
+    }
+}
 </script>
 {% endblock %}

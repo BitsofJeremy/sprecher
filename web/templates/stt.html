@@ -208,11 +208,37 @@
         }
     });
 
-    // Success handler
+    // Success handler - parse JSON response and display transcription
     document.body.addEventListener('htmx:afterRequest', function(event) {
         if (event.detail.successful) {
             const xhr = event.detail.xhr;
             if (xhr && xhr.status === 200) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    const resultDiv = document.getElementById('stt-result');
+                    if (response.text) {
+                        resultDiv.innerHTML = `
+                            <div class="bg-[var(--sp-success)]/10 border border-[var(--sp-success)]/30 rounded-xl p-4">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-[var(--sp-success)]/20 flex items-center justify-center flex-shrink-0">
+                                        <i class='bx bx-check text-xl text-[var(--sp-success)]'></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="font-medium text-[var(--sp-success)] mb-1">Transcription Complete</p>
+                                        <p class="text-[var(--sp-fg)] leading-relaxed">${response.text}</p>
+                                        <p class="text-xs text-[var(--sp-muted)] mt-2">
+                                            Detected language: ${response.language || 'unknown'} 
+                                            ${response.duration_seconds ? `• Duration: ${response.duration_seconds}s` : ''}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                } catch (e) {
+                    // Fallback: display raw response if JSON parsing fails
+                    resultDiv.innerHTML = xhr.responseText;
+                }
                 document.body.dispatchEvent(new CustomEvent('showToast', {
                     detail: { message: 'Transcription complete!', type: 'success' }
                 }));

@@ -18,8 +18,8 @@
                 <span class="text-[var(--sp-muted)] text-sm">Total Voices</span>
                 <i class='bx bx-user-voice text-xl text-[var(--sp-accent)]'></i>
             </div>
-            <p class="text-3xl font-bold">12</p>
-            <p class="text-xs text-[var(--sp-muted)] mt-1">8 Kokoro, 4 Qwen</p>
+            <p class="text-3xl font-bold" id="stat-voices">—</p>
+            <p class="text-xs text-[var(--sp-muted)] mt-1" id="stat-voices-detail">Loading...</p>
         </div>
 
         <!-- Running Jobs -->
@@ -28,8 +28,8 @@
                 <span class="text-[var(--sp-muted)] text-sm">Running Jobs</span>
                 <i class='bx bx-loader-alt text-xl text-[var(--sp-accent2)]'></i>
             </div>
-            <p class="text-3xl font-bold">2</p>
-            <p class="text-xs text-[var(--sp-muted)] mt-1">0 queued</p>
+            <p class="text-3xl font-bold" id="stat-running">—</p>
+            <p class="text-xs text-[var(--sp-muted)] mt-1" id="stat-queued">Loading...</p>
         </div>
 
         <!-- Completed Today -->
@@ -38,8 +38,8 @@
                 <span class="text-[var(--sp-muted)] text-sm">Completed Today</span>
                 <i class='bx bx-check-circle text-xl text-[var(--sp-success)]'></i>
             </div>
-            <p class="text-3xl font-bold">7</p>
-            <p class="text-xs text-[var(--sp-muted)] mt-1">Success rate: 100%</p>
+            <p class="text-3xl font-bold" id="stat-completed">—</p>
+            <p class="text-xs text-[var(--sp-muted)] mt-1" id="stat-success-rate">Loading...</p>
         </div>
 
         <!-- Engines Online -->
@@ -97,7 +97,7 @@
 
                     <div>
                         <label class="block text-sm text-[var(--sp-muted)] mb-2">Format</label>
-                        <select name="format" class="w-full">
+                        <select name="audio_format" class="w-full">
                             <option value="mp3">MP3</option>
                             <option value="wav">WAV</option>
                             <option value="ogg">OGG</option>
@@ -145,72 +145,11 @@
                 </a>
             </div>
 
-            <div class="space-y-3">
-                <!-- Job Item 1 -->
-                <div class="flex items-center justify-between p-3 rounded-lg bg-[var(--sp-bg)]">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-lg bg-[var(--sp-accent)]/20 flex items-center justify-center">
-                            <i class='bx bx-microphone text-[var(--sp-accent)]'></i>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium">Chapter 1 Narration</p>
-                            <p class="text-xs text-[var(--sp-muted)]">Kokoro - Pixel Paradox</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="status-running text-xs px-2 py-1 rounded-full">
-                            <span class="pulse-dot inline-block w-1.5 h-1.5 rounded-full bg-current mr-1"></span>
-                            Running
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Job Item 2 -->
-                <div class="flex items-center justify-between p-3 rounded-lg bg-[var(--sp-bg)]">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-lg bg-[var(--sp-accent2)]/20 flex items-center justify-center">
-                            <i class='bx bx-message-dots text-[var(--sp-accent2)]'></i>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium">Interview Recording</p>
-                            <p class="text-xs text-[var(--sp-muted)]">STT - Whisper</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="status-queued text-xs px-2 py-1 rounded-full">Queued</span>
-                    </div>
-                </div>
-
-                <!-- Job Item 3 -->
-                <div class="flex items-center justify-between p-3 rounded-lg bg-[var(--sp-bg)]">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-lg bg-[var(--sp-accent)]/20 flex items-center justify-center">
-                            <i class='bx bx-microphone text-[var(--sp-accent)]'></i>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium">Scene 42 Audio</p>
-                            <p class="text-xs text-[var(--sp-muted)]">Qwen - Arc</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="status-completed text-xs px-2 py-1 rounded-full">Completed</span>
-                    </div>
-                </div>
-
-                <!-- Job Item 4 -->
-                <div class="flex items-center justify-between p-3 rounded-lg bg-[var(--sp-bg)]">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-lg bg-[var(--sp-accent)]/20 flex items-center justify-center">
-                            <i class='bx bx-microphone text-[var(--sp-accent)]'></i>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium">Character Demo</p>
-                            <p class="text-xs text-[var(--sp-muted)]">Kokoro - Clive</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="status-failed text-xs px-2 py-1 rounded-full">Failed</span>
-                    </div>
+            <div id="recent-jobs" class="space-y-3">
+                <!-- Jobs loaded dynamically -->
+                <div class="text-center py-6">
+                    <i class='bx bx-loader-alt animate-spin text-2xl text-[var(--sp-muted)]'></i>
+                    <p class="text-sm text-[var(--sp-muted)] mt-2">Loading recent jobs...</p>
                 </div>
             </div>
         </div>
@@ -255,40 +194,155 @@
 </div>
 
 <script>
-    // Load voices on page load
+    // Load voices and jobs on page load
     document.addEventListener('DOMContentLoaded', async function() {
+        // Load voices
         const voiceSelect = document.getElementById('tts-voice-select');
         try {
-            const response = await fetch('/api/tts/voices');
-            const voices = await response.json();
-            voiceSelect.innerHTML = '';
+            const response = await fetch('/api/voices');
+            const data = await response.json();
+            const voices = data.voices || [];
+            voiceSelect.innerHTML = '<option value="">Select a voice...</option>';
             voices.forEach(voice => {
                 const option = document.createElement('option');
-                option.value = voice.id;
+                option.value = voice.voice_key || voice.id;
                 option.textContent = `${voice.name} (${voice.engine})`;
                 voiceSelect.appendChild(option);
             });
+            // Pre-select from query param
+            const params = new URLSearchParams(window.location.search);
+            const preselect = params.get('voice');
+            if (preselect) voiceSelect.value = preselect;
+            // Update stats
+            const kokoroCount = voices.filter(v => v.engine === 'kokoro').length;
+            const qwenCount = voices.filter(v => v.engine === 'qwen').length;
+            document.getElementById('stat-voices').textContent = voices.length;
+            document.getElementById('stat-voices-detail').textContent = `${kokoroCount} Kokoro, ${qwenCount} Qwen`;
         } catch (error) {
-            voiceSelect.innerHTML = '<option value="">Failed to load voices</option>';
-            document.body.dispatchEvent(new CustomEvent('showToast', {
-                detail: { message: 'Failed to load voices', type: 'error' }
-            }));
+            voiceSelect.innerHTML = '<option value="">Failed to load</option>';
+        }
+
+        // Load jobs for stats and recent list
+        try {
+            const resp = await fetch('/api/jobs?limit=5');
+            if (resp.ok) {
+                const jobData = await resp.json();
+                const jobs = jobData.jobs || [];
+                let running = 0, queued = 0, completedToday = 0, failed = 0;
+                const today = new Date().toDateString();
+                jobs.forEach(j => {
+                    if (j.status === 'running') running++;
+                    if (j.status === 'queued') queued++;
+                    if (j.status === 'completed') {
+                        if (new Date(j.completed_at || j.created_at).toDateString() === today) completedToday++;
+                    }
+                    if (j.status === 'failed') failed++;
+                });
+                document.getElementById('stat-running').textContent = running;
+                document.getElementById('stat-queued').textContent = `${queued} queued`;
+                document.getElementById('stat-completed').textContent = completedToday;
+                const total = completedToday + failed;
+                document.getElementById('stat-success-rate').textContent = total > 0
+                    ? `${Math.round(completedToday / total * 100)}% success rate`
+                    : 'No completed jobs';
+                // Render recent jobs
+                renderRecentJobs(jobs.slice(0, 4));
+            }
+        } catch (e) {
+            document.getElementById('recent-jobs').innerHTML = `
+                <p class="text-sm text-[var(--sp-muted)] text-center py-4">Could not load jobs</p>
+            `;
         }
     });
 
-    // Handle HTMX response events
+    function renderRecentJobs(jobs) {
+        const container = document.getElementById('recent-jobs');
+        if (!jobs || jobs.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-6">
+                    <p class="text-sm text-[var(--sp-muted)]">No recent jobs</p>
+                </div>
+            `;
+            return;
+        }
+        container.innerHTML = jobs.map(job => {
+            const icon = job.scope === 'stt' ? 'bx-message-dots' : 'bx-microphone';
+            const accent = job.scope === 'stt' ? 'var(--sp-accent2)' : 'var(--sp-accent)';
+            const subtitle = job.voice || (job.scope === 'stt' ? 'Whisper' : 'TTS');
+            const statusClass = `status-${job.status}`;
+            const statusLabel = job.status.charAt(0).toUpperCase() + job.status.slice(1);
+            const pulse = job.status === 'running' ? '<span class="pulse-dot inline-block w-1.5 h-1.5 rounded-full bg-current mr-1"></span>' : '';
+            return `
+                <div class="flex items-center justify-between p-3 rounded-lg bg-[var(--sp-bg)]">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg" style="background:${accent}/20;display:flex;align-items:center;justify-content:center;">
+                            <i class='bx ${icon}' style="color:${accent}"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium">${job.title || 'Untitled Job'}</p>
+                            <p class="text-xs text-[var(--sp-muted)]">${job.engine || job.scope} - ${subtitle}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="${statusClass} text-xs px-2 py-1 rounded-full">
+                            ${pulse}${statusLabel}
+                        </span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Handle TTS HTMX response
     document.body.addEventListener('htmx:afterRequest', function(event) {
-        if (event.detail.successful) {
-            document.body.dispatchEvent(new CustomEvent('showToast', {
-                detail: { message: 'Generation complete!', type: 'success' }
-            }));
+        if (!event.detail.target || !event.detail.target.closest('#tts-result')) return;
+        const xhr = event.detail.xhr;
+        if (xhr && xhr.status === 200) {
+            try {
+                const data = JSON.parse(xhr.responseText);
+                const resultDiv = document.getElementById('tts-result');
+                if (data.audio_url) {
+                    const ext = data.format || 'wav';
+                    resultDiv.innerHTML = `
+                        <div class="mt-4 p-4 rounded-xl bg-[var(--sp-surface)] border border-[var(--sp-border)]">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <p class="text-sm font-medium text-[var(--sp-success)]">Generation complete!</p>
+                                    <p class="text-xs text-[var(--sp-muted)]">${data.voice || 'TTS'} via ${data.engine} • ${data.duration_seconds || 0}s</p>
+                                </div>
+                                <a href="${data.audio_url}" download class="btn-primary px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                                    <i class='bx bx-download'></i> Download
+                                </a>
+                            </div>
+                            <audio controls class="w-full mt-2" style="height:40px;">
+                                <source src="${data.audio_url}" type="audio/${ext === 'wav' ? 'wav' : ext === 'mp3' ? 'mpeg' : 'ogg'}">
+                                Your browser does not support audio playback.
+                            </audio>
+                        </div>
+                    `;
+                } else if (data.error) {
+                    resultDiv.innerHTML = `
+                        <div class="mt-4 p-4 rounded-xl bg-[var(--sp-danger)]/10 border border-[var(--sp-danger)]/30">
+                            <p class="text-sm text-[var(--sp-danger)]"><i class='bx bx-error mr-1'></i>${data.error}</p>
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                resultDiv.innerHTML = `
+                    <div class="mt-4 p-4 rounded-xl bg-[var(--sp-danger)]/10 border border-[var(--sp-danger)]/30">
+                        <p class="text-sm text-[var(--sp-danger)]"><i class='bx bx-error mr-1'></i>Request failed. Please try again.</p>
+                    </div>
+                `;
+            }
         }
     });
 
     document.body.addEventListener('htmx:request-error', function(event) {
-        document.body.dispatchEvent(new CustomEvent('showToast', {
-            detail: { message: 'Request failed. Please try again.', type: 'error' }
-        }));
+        document.getElementById('tts-result').innerHTML = `
+            <div class="mt-4 p-4 rounded-xl bg-[var(--sp-danger)]/10 border border-[var(--sp-danger)]/30">
+                <p class="text-sm text-[var(--sp-danger)]"><i class='bx bx-error mr-1'></i>Request failed. Please try again.</p>
+            </div>
+        `;
     });
 </script>
 {% endblock %}

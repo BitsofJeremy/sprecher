@@ -24,7 +24,7 @@ templates = Jinja2Templates(directory="web/templates")
 
 
 @web_router.get("/")
-async def dashboard(request: Request) -> HTMLResponse:
+async def dashboard_page(request: Request) -> HTMLResponse:
     """Home dashboard with stats and quick actions."""
     return templates.TemplateResponse(
         request=request,
@@ -90,4 +90,45 @@ async def narrate_page(request: Request) -> HTMLResponse:
         request=request,
         name="narrate.html",
         context={"page_title": "Document Narration - Sprecher"},
+    )
+
+
+@web_router.get("/voice/add")
+async def voice_add_page(request: Request) -> HTMLResponse:
+    """Add new voice page."""
+    return templates.TemplateResponse(
+        request=request,
+        name="voice_add.html",
+        context={"page_title": "Add Voice - Sprecher"},
+    )
+
+
+@web_router.post("/voice/add")
+async def voice_add_submit(request: Request) -> HTMLResponse:
+    """Handle voice add form submission via HTMX."""
+    from fastapi.responses import RedirectResponse
+    import httpx
+    
+    form_data = await request.form()
+    
+    # POST to API endpoint
+    async with httpx.AsyncClient() as client:
+        try:
+            api_response = await client.post(
+                f"{request.base_url}api/voices",
+                data=form_data,
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
+            if api_response.status_code in (200, 201):
+                return RedirectResponse(url="/voices", status_code=303)
+        except Exception:
+            pass
+    
+    return templates.TemplateResponse(
+        request=request,
+        name="voice_add.html",
+        context={
+            "page_title": "Add Voice - Sprecher",
+            "error": "Failed to create voice. Please try again.",
+        },
     )

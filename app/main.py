@@ -3,7 +3,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import RedirectResponse
 
 import config
 
@@ -85,14 +84,4 @@ async def api_info():
     }
 
 
-@app.get("/")
-async def root():
-    """Root redirect to dashboard."""
-    return RedirectResponse(url="/dashboard", status_code=302)
-
-
-@app.get("/dashboard")
-async def dashboard():
-    """Dashboard redirect."""
-    from fastapi.responses import HTMLResponse
-    return HTMLResponse(content="<html><body><h1>Sprecher Dashboard</h1><p>Web UI coming soon...</p><p><a href='/tts'>Go to TTS</a></p><p><a href='/stt'>Go to STT</a></p></body></html>")
+# Root is handled by web_router at "/" → dashboard.html

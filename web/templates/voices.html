@@ -23,219 +23,199 @@
 
     <!-- Filter Tabs -->
     <div class="flex gap-2 mb-6 border-b border-[var(--sp-border)] pb-4">
-        <button class="px-4 py-2 rounded-lg text-sm font-medium bg-[var(--sp-accent)]/20 text-[var(--sp-accent)]">
-            All <span class="ml-1 text-xs opacity-75">(12)</span>
+        <button class="filter-tab px-4 py-2 rounded-lg text-sm font-medium bg-[var(--sp-accent)]/20 text-[var(--sp-accent)]" data-filter="all">
+            All <span class="ml-1 text-xs opacity-75" id="count-all">(0)</span>
         </button>
-        <button class="px-4 py-2 rounded-lg text-sm font-medium text-[var(--sp-muted)] hover:bg-[var(--sp-surface)] hover:text-[var(--sp-text)] transition-smooth">
-            Kokoro <span class="ml-1 text-xs opacity-75">(8)</span>
+        <button class="filter-tab px-4 py-2 rounded-lg text-sm font-medium text-[var(--sp-muted)] hover:bg-[var(--sp-surface)] hover:text-[var(--sp-text)] transition-smooth" data-filter="kokoro">
+            Kokoro <span class="ml-1 text-xs opacity-75" id="count-kokoro">(0)</span>
         </button>
-        <button class="px-4 py-2 rounded-lg text-sm font-medium text-[var(--sp-muted)] hover:bg-[var(--sp-surface)] hover:text-[var(--sp-text)] transition-smooth">
-            Qwen <span class="ml-1 text-xs opacity-75">(4)</span>
+        <button class="filter-tab px-4 py-2 rounded-lg text-sm font-medium text-[var(--sp-muted)] hover:bg-[var(--sp-surface)] hover:text-[var(--sp-text)] transition-smooth" data-filter="qwen">
+            Qwen <span class="ml-1 text-xs opacity-75" id="count-qwen">(0)</span>
         </button>
     </div>
 
     <!-- Voice Cards Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- Voice Card 1 -->
-        <div class="card p-5 card-glow">
-            <div class="flex items-start justify-between mb-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--sp-accent)] to-[var(--sp-accent2)] flex items-center justify-center text-lg font-bold">
-                        P
-                    </div>
-                    <div>
-                        <h3 class="font-semibold">Pixel Paradox</h3>
-                        <p class="text-xs text-[var(--sp-muted)]">Primary narrator</p>
-                    </div>
-                </div>
-                <span class="engine-kokoro text-xs px-2 py-1 rounded-full font-medium">Kokoro</span>
-            </div>
-            <div class="flex items-center gap-2 mb-4">
-                <span class="text-xs px-2 py-1 rounded-full bg-[var(--sp-success)]/20 text-[var(--sp-success)]">cloned</span>
-                <span class="text-xs text-[var(--sp-muted)]">en-US</span>
-            </div>
-            <div class="flex gap-2">
-                <a href="/tts?voice=pixel-paradox" class="btn-primary flex-1 py-2 rounded-lg text-sm font-medium text-center">
-                    Use
-                </a>
-                <button class="btn-secondary px-3 py-2 rounded-lg text-sm">
-                    <i class='bx bx-edit'></i>
-                </button>
-                <button class="btn-secondary px-3 py-2 rounded-lg text-sm text-[var(--sp-danger)]">
-                    <i class='bx bx-trash'></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Voice Card 2 -->
-        <div class="card p-5 card-glow">
-            <div class="flex items-start justify-between mb-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--sp-accent2)] to-[var(--sp-accent)] flex items-center justify-center text-lg font-bold">
-                        A
-                    </div>
-                    <div>
-                        <h3 class="font-semibold">Arc</h3>
-                        <p class="text-xs text-[var(--sp-muted)]">Quantum espresso machine</p>
-                    </div>
-                </div>
-                <span class="engine-kokoro text-xs px-2 py-1 rounded-full font-medium">Kokoro</span>
-            </div>
-            <div class="flex items-center gap-2 mb-4">
-                <span class="text-xs px-2 py-1 rounded-full bg-[var(--sp-accent)]/20 text-[var(--sp-accent)]">designed</span>
-                <span class="text-xs text-[var(--sp-muted)]">en-UK</span>
-            </div>
-            <div class="flex gap-2">
-                <a href="/tts?voice=arc" class="btn-primary flex-1 py-2 rounded-lg text-sm font-medium text-center">
-                    Use
-                </a>
-                <button class="btn-secondary px-3 py-2 rounded-lg text-sm">
-                    <i class='bx bx-edit'></i>
-                </button>
-                <button class="btn-secondary px-3 py-2 rounded-lg text-sm text-[var(--sp-danger)]">
-                    <i class='bx bx-trash'></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Voice Card 3 -->
-        <div class="card p-5 card-glow">
-            <div class="flex items-start justify-between mb-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--sp-warning)] to-[var(--sp-danger)] flex items-center justify-center text-lg font-bold">
-                        C
-                    </div>
-                    <div>
-                        <h3 class="font-semibold">Clive</h3>
-                        <p class="text-xs text-[var(--sp-muted)]">Sentient stapler</p>
-                    </div>
-                </div>
-                <span class="engine-kokoro text-xs px-2 py-1 rounded-full font-medium">Kokoro</span>
-            </div>
-            <div class="flex items-center gap-2 mb-4">
-                <span class="text-xs px-2 py-1 rounded-full bg-[var(--sp-success)]/20 text-[var(--sp-success)]">cloned</span>
-                <span class="text-xs text-[var(--sp-muted)]">en-US</span>
-            </div>
-            <div class="flex gap-2">
-                <a href="/tts?voice=clive" class="btn-primary flex-1 py-2 rounded-lg text-sm font-medium text-center">
-                    Use
-                </a>
-                <button class="btn-secondary px-3 py-2 rounded-lg text-sm">
-                    <i class='bx bx-edit'></i>
-                </button>
-                <button class="btn-secondary px-3 py-2 rounded-lg text-sm text-[var(--sp-danger)]">
-                    <i class='bx bx-trash'></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Voice Card 4 -->
-        <div class="card p-5 card-glow">
-            <div class="flex items-start justify-between mb-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--sp-danger)] to-[var(--sp-accent)] flex items-center justify-center text-lg font-bold">
-                        M
-                    </div>
-                    <div>
-                        <h3 class="font-semibold">Mochi</h3>
-                        <p class="text-xs text-[var(--sp-muted)]">Builder companion</p>
-                    </div>
-                </div>
-                <span class="engine-qwen text-xs px-2 py-1 rounded-full font-medium">Qwen</span>
-            </div>
-            <div class="flex items-center gap-2 mb-4">
-                <span class="text-xs px-2 py-1 rounded-full bg-[var(--sp-accent)]/20 text-[var(--sp-accent)]">designed</span>
-                <span class="text-xs text-[var(--sp-muted)]">en-US</span>
-            </div>
-            <div class="flex gap-2">
-                <a href="/tts?voice=mochi" class="btn-primary flex-1 py-2 rounded-lg text-sm font-medium text-center">
-                    Use
-                </a>
-                <button class="btn-secondary px-3 py-2 rounded-lg text-sm">
-                    <i class='bx bx-edit'></i>
-                </button>
-                <button class="btn-secondary px-3 py-2 rounded-lg text-sm text-[var(--sp-danger)]">
-                    <i class='bx bx-trash'></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Voice Card 5 -->
-        <div class="card p-5 card-glow">
-            <div class="flex items-start justify-between mb-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--sp-success)] to-[var(--sp-accent2)] flex items-center justify-center text-lg font-bold">
-                        N
-                    </div>
-                    <div>
-                        <h3 class="font-semibold">Nova Prime</h3>
-                        <p class="text-xs text-[var(--sp-muted)]">Narrator voice</p>
-                    </div>
-                </div>
-                <span class="engine-qwen text-xs px-2 py-1 rounded-full font-medium">Qwen</span>
-            </div>
-            <div class="flex items-center gap-2 mb-4">
-                <span class="text-xs px-2 py-1 rounded-full bg-[var(--sp-success)]/20 text-[var(--sp-success)]">cloned</span>
-                <span class="text-xs text-[var(--sp-muted)]">en-US</span>
-            </div>
-            <div class="flex gap-2">
-                <a href="/tts?voice=nova" class="btn-primary flex-1 py-2 rounded-lg text-sm font-medium text-center">
-                    Use
-                </a>
-                <button class="btn-secondary px-3 py-2 rounded-lg text-sm">
-                    <i class='bx bx-edit'></i>
-                </button>
-                <button class="btn-secondary px-3 py-2 rounded-lg text-sm text-[var(--sp-danger)]">
-                    <i class='bx bx-trash'></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Voice Card 6 -->
-        <div class="card p-5 card-glow">
-            <div class="flex items-start justify-between mb-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--sp-accent)] to-[var(--sp-warning)] flex items-center justify-center text-lg font-bold">
-                        Z
-                    </div>
-                    <div>
-                        <h3 class="font-semibold">Zephyr</h3>
-                        <p class="text-xs text-[var(--sp-muted)]">Calm narrator</p>
-                    </div>
-                </div>
-                <span class="engine-qwen text-xs px-2 py-1 rounded-full font-medium">Qwen</span>
-            </div>
-            <div class="flex items-center gap-2 mb-4">
-                <span class="text-xs px-2 py-1 rounded-full bg-[var(--sp-accent)]/20 text-[var(--sp-accent)]">designed</span>
-                <span class="text-xs text-[var(--sp-muted)]">en-AU</span>
-            </div>
-            <div class="flex gap-2">
-                <a href="/tts?voice=zephyr" class="btn-primary flex-1 py-2 rounded-lg text-sm font-medium text-center">
-                    Use
-                </a>
-                <button class="btn-secondary px-3 py-2 rounded-lg text-sm">
-                    <i class='bx bx-edit'></i>
-                </button>
-                <button class="btn-secondary px-3 py-2 rounded-lg text-sm text-[var(--sp-danger)]">
-                    <i class='bx bx-trash'></i>
-                </button>
-            </div>
-        </div>
+    <div id="voices-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Cards loaded dynamically -->
     </div>
 
-    <!-- Empty State (hidden when voices exist) -->
-    <div id="empty-state" class="hidden">
-        <div class="card p-12 text-center">
-            <div class="w-20 h-20 rounded-full bg-[var(--sp-accent)]/20 flex items-center justify-center mx-auto mb-4">
-                <i class='bx bx-user-voice text-4xl text-[var(--sp-accent)]'></i>
-            </div>
-            <h3 class="text-xl font-semibold mb-2">No voices yet</h3>
-            <p class="text-[var(--sp-muted)] mb-6">Add your first voice to start generating speech.</p>
-            <a href="/voice/add" class="btn-primary px-6 py-3 rounded-xl font-medium inline-flex items-center gap-2">
-                <i class='bx bx-plus'></i>
-                <span>Add Your First Voice</span>
-            </a>
+    <!-- Loading State -->
+    <div id="loading-state" class="card p-12 text-center">
+        <div class="w-12 h-12 rounded-full bg-[var(--sp-accent)]/20 flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <i class='bx bx-loader text-2xl text-[var(--sp-accent)] animate-spin'></i>
         </div>
+        <p class="text-[var(--sp-muted)]">Loading voices...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-state" class="hidden card p-12 text-center">
+        <div class="w-12 h-12 rounded-full bg-[var(--sp-danger)]/20 flex items-center justify-center mx-auto mb-4">
+            <i class='bx bx-error text-2xl text-[var(--sp-danger)]'></i>
+        </div>
+        <h3 class="text-xl font-semibold mb-2">Failed to load voices</h3>
+        <p class="text-[var(--sp-muted)] mb-4">Could not connect to the API.</p>
+        <button onclick="loadVoices()" class="btn-primary px-6 py-3 rounded-xl font-medium">
+            Retry
+        </button>
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="hidden card p-12 text-center">
+        <div class="w-20 h-20 rounded-full bg-[var(--sp-accent)]/20 flex items-center justify-center mx-auto mb-4">
+            <i class='bx bx-user-voice text-4xl text-[var(--sp-accent)]'></i>
+        </div>
+        <h3 class="text-xl font-semibold mb-2">No voices yet</h3>
+        <p class="text-[var(--sp-muted)] mb-6">Add your first voice to start generating speech.</p>
+        <a href="/voice/add" class="btn-primary px-6 py-3 rounded-xl font-medium inline-flex items-center gap-2">
+            <i class='bx bx-plus'></i>
+            <span>Add Your First Voice</span>
+        </a>
     </div>
 </div>
+
+<script>
+    let allVoices = [];
+    let currentFilter = 'all';
+
+    function getEngineClass(engine) {
+        const engineLower = (engine || '').toLowerCase();
+        if (engineLower === 'kokoro') return 'engine-kokoro';
+        if (engineLower === 'qwen') return 'engine-qwen';
+        return '';
+    }
+
+    function getTypeBadgeClass(type) {
+        const typeLower = (type || '').toLowerCase();
+        if (typeLower === 'cloned') return 'bg-[var(--sp-success)]/20 text-[var(--sp-success)]';
+        if (typeLower === 'designed') return 'bg-[var(--sp-accent)]/20 text-[var(--sp-accent)]';
+        return 'bg-[var(--sp-surface)] text-[var(--sp-muted)]';
+    }
+
+    function getInitials(name) {
+        return (name || '?').charAt(0).toUpperCase();
+    }
+
+    function createVoiceCard(voice) {
+        const engineClass = getEngineClass(voice.engine);
+        const typeBadgeClass = getTypeBadgeClass(voice.voice_type);
+        const slug = voice.slug || voice.voice_key || voice.id;
+        const language = voice.language || 'en-US';
+        const typeLabel = voice.voice_type || 'preset';
+        const description = voice.voice_description || voice.description || '';
+        const engineLabel = (voice.engine || 'kokoro').charAt(0).toUpperCase() + (voice.engine || 'kokoro').slice(1);
+
+        return `
+            <div class="card p-5 card-glow" data-engine="${(voice.engine || '').toLowerCase()}">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--sp-accent)] to-[var(--sp-accent2)] flex items-center justify-center text-lg font-bold">
+                            ${getInitials(voice.name)}
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">${voice.name || 'Unknown'}</h3>
+                            <p class="text-xs text-[var(--sp-muted)]">${description}</p>
+                        </div>
+                    </div>
+                    <span class="${engineClass} text-xs px-2 py-1 rounded-full font-medium">${engineLabel}</span>
+                </div>
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="text-xs px-2 py-1 rounded-full ${typeBadgeClass}">${typeLabel}</span>
+                    <span class="text-xs text-[var(--sp-muted)]">${language}</span>
+                </div>
+                <div class="flex gap-2">
+                    <a href="/tts?voice=${encodeURIComponent(slug)}" class="btn-primary flex-1 py-2 rounded-lg text-sm font-medium text-center">
+                        Use
+                    </a>
+                    <button class="btn-secondary px-3 py-2 rounded-lg text-sm">
+                        <i class='bx bx-edit'></i>
+                    </button>
+                    <button class="btn-secondary px-3 py-2 rounded-lg text-sm text-[var(--sp-danger)]">
+                        <i class='bx bx-trash'></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    function updateCounts() {
+        const kokoroCount = allVoices.filter(v => (v.engine || '').toLowerCase() === 'kokoro').length;
+        const qwenCount = allVoices.filter(v => (v.engine || '').toLowerCase() === 'qwen').length;
+        document.getElementById('count-all').textContent = `(${allVoices.length})`;
+        document.getElementById('count-kokoro').textContent = `(${kokoroCount})`;
+        document.getElementById('count-qwen').textContent = `(${qwenCount})`;
+    }
+
+    function renderVoices() {
+        const grid = document.getElementById('voices-grid');
+        const loading = document.getElementById('loading-state');
+        const error = document.getElementById('error-state');
+        const empty = document.getElementById('empty-state');
+
+        loading.classList.add('hidden');
+        error.classList.add('hidden');
+        empty.classList.add('hidden');
+
+        const filtered = currentFilter === 'all'
+            ? allVoices
+            : allVoices.filter(v => (v.engine || '').toLowerCase() === currentFilter);
+
+        if (allVoices.length === 0) {
+            empty.classList.remove('hidden');
+            grid.innerHTML = '';
+            return;
+        }
+
+        if (filtered.length === 0) {
+            grid.innerHTML = '<div class="col-span-full text-center py-8 text-[var(--sp-muted)]">No voices match this filter.</div>';
+            return;
+        }
+
+        grid.innerHTML = filtered.map(createVoiceCard).join('');
+    }
+
+    async function loadVoices() {
+        const loading = document.getElementById('loading-state');
+        const error = document.getElementById('error-state');
+        const empty = document.getElementById('empty-state');
+
+        loading.classList.remove('hidden');
+        error.classList.add('hidden');
+        empty.classList.add('hidden');
+        document.getElementById('voices-grid').innerHTML = '';
+
+        try {
+            const response = await fetch('/api/voices');
+            if (!response.ok) throw new Error('Failed to fetch');
+            
+            const data = await response.json();
+            // Handle {success, voices} wrapper or direct array
+            allVoices = data.voices || (Array.isArray(data) ? data : []);
+            
+            updateCounts();
+            renderVoices();
+        } catch (error) {
+            loading.classList.add('hidden');
+            error.classList.remove('hidden');
+        }
+    }
+
+    // Filter tab handling
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Update active tab styling
+            document.querySelectorAll('.filter-tab').forEach(t => {
+                t.classList.remove('bg-[var(--sp-accent)]/20', 'text-[var(--sp-accent)]');
+                t.classList.add('text-[var(--sp-muted)]');
+            });
+            tab.classList.add('bg-[var(--sp-accent)]/20', 'text-[var(--sp-accent)]');
+            tab.classList.remove('text-[var(--sp-muted)]');
+
+            currentFilter = tab.dataset.filter;
+            renderVoices();
+        });
+    });
+
+    // Load voices on page load
+    document.addEventListener('DOMContentLoaded', loadVoices);
+</script>
 {% endblock %}

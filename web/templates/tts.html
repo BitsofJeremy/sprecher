@@ -116,7 +116,7 @@
                     <label for="format" class="block text-sm font-medium text-[var(--sp-muted)] mb-2">
                         Output Format
                     </label>
-                    <select id="format" name="format" class="w-full">
+                    <select id="audio_format" name="audio_format" class="w-full">
                         <option value="mp3">MP3</option>
                         <option value="wav">WAV (uncompressed)</option>
                         <option value="ogg">OGG</option>
@@ -164,16 +164,23 @@
     document.addEventListener('DOMContentLoaded', async function() {
         const voiceSelect = document.getElementById('voice');
         try {
-            const response = await fetch('/api/tts/voices');
+            const response = await fetch('/api/voices');
             if (!response.ok) throw new Error('Failed to fetch');
-            const voices = await response.json();
+            const data = await response.json();
+            const voices = data.voices || [];
             voiceSelect.innerHTML = '<option value="">Select a voice...</option>';
             voices.forEach(voice => {
                 const option = document.createElement('option');
-                option.value = voice.id;
+                option.value = voice.voice_key || voice.id;
                 option.textContent = `${voice.name} (${voice.engine})`;
                 voiceSelect.appendChild(option);
             });
+            // Pre-select from query param
+            const params = new URLSearchParams(window.location.search);
+            const preselect = params.get('voice');
+            if (preselect) {
+                voiceSelect.value = preselect;
+            }
         } catch (error) {
             voiceSelect.innerHTML = '<option value="">Failed to load voices</option>';
             document.body.dispatchEvent(new CustomEvent('showToast', {
@@ -182,14 +189,48 @@
         }
     });
 
-    // Success handler
+    // Handle TTS sync response
     document.body.addEventListener('htmx:afterRequest', function(event) {
-        if (event.detail.successful) {
-            const xhr = event.detail.xhr;
-            if (xhr && xhr.status === 200) {
-                document.body.dispatchEvent(new CustomEvent('showToast', {
-                    detail: { message: 'Speech generated successfully!', type: 'success' }
-                }));
+        if (!event.detail.target || !event.detail.target.closest('#tts-result')) return;
+        const xhr = event.detail.xhr;
+        if (xhr && xhr.status === 200) {
+            try {
+                const data = JSON.parse(xhr.responseText);
+                const resultDiv = document.getElementById('tts-result');
+                if (data.audio_url) {
+                    const ext = data.format || 'wav';
+                    const filename = data.audio_url.split('/').pop();
+                    resultDiv.innerHTML = `
+                        <div class="mt-4 p-4 rounded-xl bg-[var(--sp-surface)] border border-[var(--sp-border)]">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <p class="text-sm font-medium text-[var(--sp-success)]">Generation complete!</p>
+                                    <p class="text-xs text-[var(--sp-muted)]">${data.voice} via ${data.engine} • ${data.duration_seconds}s</p>
+                                </div>
+                                <a href="${data.audio_url}" download class="btn-primary px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                                    <i class='bx bx-download'></i> Download
+                                </a>
+                            </div>
+                            <audio controls class="w-full mt-2" style="height:40px;">
+                                <source src="${data.audio_url}" type="audio/${ext === 'wav' ? 'wav' : ext === 'mp3' ? 'mpeg' : 'ogg'}">
+                                Your browser does not support audio playback.
+                            </audio>
+                        </div>
+                    `;
+                } else if (data.error) {
+                    resultDiv.innerHTML = `
+                        <div class="mt-4 p-4 rounded-xl bg-[var(--sp-danger)]/10 border border-[var(--sp-danger)]/30">
+                            <p class="text-sm text-[var(--sp-danger)]"><i class='bx bx-error mr-1'></i>${data.error}</p>
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                // Non-JSON response - likely an error page
+                resultDiv.innerHTML = `
+                    <div class="mt-4 p-4 rounded-xl bg-[var(--sp-danger)]/10 border border-[var(--sp-danger)]/30">
+                        <p class="text-sm text-[var(--sp-danger)]"><i class='bx bx-error mr-1'></i>Request failed. Please try again.</p>
+                    </div>
+                `;
             }
         }
     });
