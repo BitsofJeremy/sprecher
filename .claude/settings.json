@@ -3,7 +3,7 @@
     "sprecher": {
       "command": "uv",
       "args": ["run", "python", "-m", "mcp.server"],
-      "cwd": "/Users/jeremy/Documents/current_projects/ai_speech/sprecher"
+      "cwd": "/home/jeremy/Documents/current_projects/ai_speech/sprecher"
     }
   }
 }
