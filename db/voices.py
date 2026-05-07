@@ -71,6 +71,26 @@ async def get_voice(voice_id: int) -> Optional[dict]:
             return None
 
 
+async def get_voice_by_key(voice_key: str) -> Optional[dict]:
+    """Get a voice by voice_key or slug."""
+    async with get_db() as db:
+        db.row_factory = aiosqlite.Row
+        async with db.execute(
+            "SELECT * FROM voices WHERE voice_key = ? OR slug = ? LIMIT 1",
+            (voice_key, voice_key),
+        ) as cursor:
+            row = await cursor.fetchone()
+            if row:
+                result = dict(row)
+                if result.get("emotional_range"):
+                    try:
+                        result["emotional_range"] = json.loads(result["emotional_range"])
+                    except (json.JSONDecodeError, TypeError):
+                        result["emotional_range"] = []
+                return result
+            return None
+
+
 async def get_voice_by_slug(slug: str) -> Optional[dict]:
     """Get a voice by slug."""
     async with get_db() as db:
