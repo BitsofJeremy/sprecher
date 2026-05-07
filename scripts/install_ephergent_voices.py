@@ -201,6 +201,12 @@ CHARACTERS = {
 
 
 def get_work_dir() -> Path:
+    # Auto-detect: prefer the directory this script lives in's parent,
+    # falling back to ~/sprecher
+    script_dir = Path(__file__).resolve().parent  # .../sprecher/scripts
+    sprecher_root = script_dir.parent
+    if (sprecher_root / "app").exists() or (sprecher_root / "core").exists():
+        return sprecher_root
     return Path(os.environ.get("SPRECHER_WORK_DIR", "~/sprecher")).expanduser()
 
 
