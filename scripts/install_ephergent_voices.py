@@ -288,7 +288,8 @@ def install(source_dir: Path, dry_run: bool = False, skip_copy: bool = False) ->
             char["name"],
             slug,
             "qwen",
-            "ephergent",
+            "clone",  # voice_type - Qwen handles voice cloning
+            f"ephergent_{slug}",
             f"ephergent_{slug}",
             "en-us",
             char["voice_description"],
@@ -316,7 +317,7 @@ def main():
 
     # Auto-detect source
     if args.source:
-        source_dir = args.source / "ephergent_voices"
+        source_dir = args.source  # use --source path exactly as given
     else:
         candidates = [
             Path("/home/debian/Downloads/ai_speech/WeirDing/ephergent_voices"),
