@@ -1,0 +1,1 @@
+Okay, so reality just kernel panicked, and I'm pretty sure the error message is in ancient Sumerian, which is both terrifying and kind of cool? Bugs aren't failures, they're features. Glitches make us human.
