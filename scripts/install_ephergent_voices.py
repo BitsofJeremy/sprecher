@@ -32,7 +32,7 @@ from pathlib import Path
 
 # Character definitions (mirrors characters_data.py from WeirDing)
 CHARACTERS = {
-    "arc": {
+    "a1": {
         "name": "ARC",
         "voice_description": (
             "Mid-range male voice, measured and precise with stoic British formality. "
@@ -41,7 +41,7 @@ CHARACTERS = {
         ),
         "speaking_style": "Formal address, British idioms, espresso metaphors for emotions",
         "emotional_range": ["politely bewildered", "dry wit", "quiet concern", "understated terror"],
-        "ref_audio": "arc.wav",
+        "ref_audio": "a1.wav",
         "ref_text": (
             "Miss Paradox, I do believe reality is experiencing what one might call "
             "an existential crisis. Most inconvenient. I've prepared your espresso "
