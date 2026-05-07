@@ -288,8 +288,7 @@ def install(source_dir: Path, dry_run: bool = False, skip_copy: bool = False) ->
             char["name"],
             slug,
             "qwen",
-            "clone",  # voice_type - Qwen handles voice cloning
-            f"ephergent_{slug}",
+            "clone",
             f"ephergent_{slug}",
             "en-us",
             char["voice_description"],
