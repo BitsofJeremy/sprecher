@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, Header
 from fastapi.responses import JSONResponse
 
 import config
-from db.jobs import get_job, update_job, list_jobs
+from db.jobs import get_job, update_job, list_jobs, delete_job
 from jobs.queue import get_job_runner
 from jobs.models import JobStatus, TTSJob, NarrateJob, STTJob
 
@@ -168,3 +168,39 @@ async def get_job_by_id(
         raise HTTPException(status_code=404, detail="Job not found")
 
     return JSONResponse(job)
+
+
+@router.delete("/jobs/{job_id}")
+async def delete_job_by_id(
+    job_id: int,
+    authorization: Optional[str] = Header(None),
+):
+    """Delete a job by ID."""
+    await verify_api_key(authorization)
+
+    job = await get_job(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    await delete_job(job_id)
+    return JSONResponse({"job_id": job_id, "message": "Job deleted"})
+
+
+@router.post("/jobs/delete-by-status")
+async def delete_jobs_by_status(
+    status: str = "cancelled",
+    authorization: Optional[str] = Header(None),
+):
+    """Delete all jobs with a given status (default: cancelled)."""
+    await verify_api_key(authorization)
+
+    jobs = await list_jobs(status=status)
+    deleted = 0
+    for job in jobs:
+        await delete_job(job["id"])
+        deleted += 1
+
+    return JSONResponse({
+        "deleted": deleted,
+        "message": f"Deleted {deleted} job(s) with status '{status}'",
+    })

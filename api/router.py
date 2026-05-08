@@ -8,6 +8,7 @@ from api.stt import router as stt_router
 from api.voices import router as voices_router
 from api.narrate import router as narrate_router
 from api.jobs import router as jobs_router
+from api.storage import router as storage_router
 
 api_router = APIRouter(prefix="/api")
 
@@ -18,3 +19,4 @@ api_router.include_router(stt_router)
 api_router.include_router(voices_router)
 api_router.include_router(narrate_router)
 api_router.include_router(jobs_router)
+api_router.include_router(storage_router)

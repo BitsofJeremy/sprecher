@@ -89,6 +89,46 @@ SYSTEM_PRESETS = [
     },
 ]
 
+# Ephergent character voice blends - these give each character their distinct sound
+EPHERGENT_CHARACTER_VOICES = [
+    {
+        "name": "Pixel Paradox",
+        "slug": "pixel_paradox",
+        "voice_key": "bf_isabella(1.5)+bm_george(1)+af_bella(0.5)+af_sarah(0.5)",
+        "description": "Underground journalist voice - warm, versatile, slightly husky with authority",
+    },
+    {
+        "name": "A1 (Arc)",
+        "slug": "a1_assistant",
+        "voice_key": "bm_lewis(0.8)+bm_george(1.5)+bf_alice(0.4)+am_adam(0.7)+am_onyx(0.4)",
+        "description": "British AI assistant - smooth, authoritative with subtle warmth",
+    },
+    {
+        "name": "Clive Stapler",
+        "slug": "clive_stapler",
+        "voice_key": "am_onyx(0.5)+bm_george(1.3)+bm_lewis(0.7)",
+        "description": "Noir detective informant - world-weary, gravelly, wise",
+    },
+    {
+        "name": "Zephyr Glitch",
+        "slug": "zephyr_glitch",
+        "voice_key": "bm_lewis(0.7)+bf_lily(1)+am_onyx(0.3)+am_puck(0.3)+am_fenrir(0.3)",
+        "description": "Manic tech-head - energetic, rapid, with underlying edge",
+    },
+    {
+        "name": "Luminara Usha",
+        "slug": "luminara_usha",
+        "voice_key": "bf_lily(0.3)+af_nova(0.2)+hf_beta(1.5)",
+        "description": "Calm observer - measured, neutral with emerging warmth",
+    },
+    {
+        "name": "Om Kai",
+        "slug": "om_kai",
+        "voice_key": "hm_omega(1.5)+am_puck(0.8)+bm_lewis(1)",
+        "description": "Contemplative guide - deep, serene, unhurried wisdom",
+    },
+]
+
 
 async def seed_voices(db: aiosqlite.Connection) -> None:
     """Seed Kokoro preset voices and system presets if not already seeded."""
@@ -116,6 +156,16 @@ async def seed_voices(db: aiosqlite.Connection) -> None:
             VALUES (?, ?, 'kokoro', 'blend', ?, ?, 1)
             """,
             (preset["name"], preset["slug"], preset["voice_key"], preset["description"])
+        )
+
+    # Insert Ephergent character voice blends
+    for char_voice in EPHERGENT_CHARACTER_VOICES:
+        await db.execute(
+            """
+            INSERT INTO voices (name, slug, engine, voice_type, voice_key, voice_description, is_system)
+            VALUES (?, ?, 'kokoro', 'blend', ?, ?, 1)
+            """,
+            (char_voice["name"], char_voice["slug"], char_voice["voice_key"], char_voice["description"])
         )
 
     await db.commit()

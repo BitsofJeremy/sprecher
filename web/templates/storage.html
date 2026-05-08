@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Storage Management - Sprecher{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-[var(--sp-accent)]/20 flex items-center justify-center">
+                <i class='bx bx-hard-drive text-2xl text-[var(--sp-accent)]'></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold">Storage Management</h1>
+                <p class="text-[var(--sp-muted)]">Manage audio output files</p>
+            </div>
+        </div>
+        <button onclick="location.reload()" class="btn-secondary px-4 py-2 rounded-lg flex items-center gap-2">
+            <i class='bx bx-refresh'></i>
+            Refresh
+        </button>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div class="card p-5">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-[var(--sp-muted)] text-sm">Total Files</span>
+                <i class='bx bx-file text-xl text-[var(--sp-accent)]'></i>
+            </div>
+            <p class="text-3xl font-bold" id="stat-files">—</p>
+        </div>
+        <div class="card p-5">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-[var(--sp-muted)] text-sm">Total Size</span>
+                <i class='bx bx-data text-xl text-[var(--sp-accent2)]'></i>
+            </div>
+            <p class="text-3xl font-bold" id="stat-size">—</p>
+        </div>
+        <div class="card p-5">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-[var(--sp-muted)] text-sm">Output Directory</span>
+                <i class='bx bx-folder text-xl text-[var(--sp-warning)]'></i>
+            </div>
+            <p class="text-sm font-mono text-[var(--sp-accent)] truncate" id="stat-dir">—</p>
+        </div>
+    </div>
+
+    <!-- Cleanup Controls -->
+    <div class="card p-6 mb-6">
+        <h2 class="text-lg font-semibold mb-4">Cleanup Options</h2>
+        <div class="flex flex-wrap gap-3">
+            <button onclick="cleanupOld(7)"
+                    class="px-4 py-2 bg-[var(--sp-warning)]/20 hover:bg-[var(--sp-warning)]/30 text-[var(--sp-warning)] rounded-lg text-sm font-medium flex items-center gap-2">
+                <i class='bx bx-trash'></i> Clean > 7 Days
+            </button>
+            <button onclick="cleanupOld(30)"
+                    class="px-4 py-2 bg-[var(--sp-warning)]/20 hover:bg-[var(--sp-warning)]/30 text-[var(--sp-warning)] rounded-lg text-sm font-medium flex items-center gap-2">
+                <i class='bx bx-trash'></i> Clean > 30 Days
+            </button>
+            <button onclick="cleanupOld(90)"
+                    class="px-4 py-2 bg-[var(--sp-warning)]/20 hover:bg-[var(--sp-warning)]/30 text-[var(--sp-warning)] rounded-lg text-sm font-medium flex items-center gap-2">
+                <i class='bx bx-trash'></i> Clean > 90 Days
+            </button>
+            <div class="border-l border-[var(--sp-border)] pl-3"></div>
+            <button id="btn-delete-selected" onclick="deleteSelected()" disabled
+                    class="px-4 py-2 bg-[var(--sp-danger)]/20 hover:bg-[var(--sp-danger)]/30 text-[var(--sp-danger)] rounded-lg text-sm font-medium flex items-center gap-2 disabled:opacity-40">
+                <i class='bx bx-checkbox-checked'></i> Delete Selected (<span id="selected-count">0</span>)
+            </button>
+            <button onclick="deleteAll()"
+                    class="px-4 py-2 bg-[var(--sp-danger)]/30 hover:bg-[var(--sp-danger)]/50 text-[var(--sp-danger)] rounded-lg text-sm font-medium flex items-center gap-2">
+                <i class='bx bx-trash-alt'></i> Delete All
+            </button>
+        </div>
+    </div>
+
+    <!-- File List -->
+    <div class="card overflow-hidden">
+        <div class="px-4 py-3 border-b border-[var(--sp-border)] flex items-center gap-3 bg-[var(--sp-surface)]/50">
+            <input type="checkbox" id="select-all" onchange="toggleSelectAll(this)"
+                   class="w-4 h-4 rounded border-[var(--sp-border)] bg-[var(--sp-bg)] accent-[var(--sp-accent)] cursor-pointer">
+            <label for="select-all" class="text-xs text-[var(--sp-muted)] cursor-pointer select-none">Select All</label>
+            <span class="text-[var(--sp-border)]">|</span>
+            <h2 class="font-semibold">Output Files (<span id="file-count">0</span>)</h2>
+        </div>
+
+        <div id="file-list">
+            <div class="px-4 py-8 text-center">
+                <i class='bx bx-loader-alt animate-spin text-2xl text-[var(--sp-muted)]'></i>
+                <p class="text-sm text-[var(--sp-muted)] mt-2">Loading files...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let files = [];
+
+function loadFiles() {
+    Promise.all([
+        fetch('/api/storage/files').then(r => r.json()),
+        fetch('/api/storage/stats').then(r => r.json()),
+    ])
+        .then(([d, stats]) => {
+            files = d.files || [];
+            renderFiles();
+            updateStats(stats);
+        })
+        .catch(e => {
+            document.getElementById('file-list').innerHTML = `
+                <div class="px-4 py-6 text-center text-[var(--sp-danger)]">
+                    <i class='bx bx-error text-2xl mb-2'></i>
+                    <p>Failed to load files</p>
+                </div>
+            `;
+        });
+}
+
+function updateStats(stats) {
+    document.getElementById('stat-files').textContent = stats.file_count;
+    document.getElementById('stat-size').textContent = stats.total_size_mb + ' MB';
+    document.getElementById('stat-dir').textContent = stats.output_dir;
+}
+
+function renderFiles() {
+    const list = document.getElementById('file-list');
+    document.getElementById('file-count').textContent = files.length;
+
+    if (files.length === 0) {
+        list.innerHTML = `
+            <div class="px-4 py-8 text-center text-[var(--sp-muted)]">
+                <i class='bx bx-folder-open text-3xl mb-2'></i>
+                <p>No files in output directory</p>
+            </div>
+        `;
+        return;
+    }
+
+    list.innerHTML = files.map(f => `
+        <div class="px-4 py-3 flex items-center gap-3 hover:bg-[var(--sp-surface)]/50 transition border-b border-[var(--sp-border)] last:border-0">
+            <input type="checkbox" name="file-select" value="${f.name}"
+                   onchange="updateSelectionCount()"
+                   class="w-4 h-4 rounded border-[var(--sp-border)] bg-[var(--sp-bg)] accent-[var(--sp-accent)] cursor-pointer shrink-0">
+            <div class="flex-1 min-w-0">
+                <p class="font-mono text-sm truncate">${f.name}</p>
+                <p class="text-xs text-[var(--sp-muted)]">${f.size_mb} MB • ${f.created} (${f.age_days} days old)</p>
+            </div>
+            <button onclick="deleteFile('${f.name}')"
+                    class="px-3 py-1 text-sm text-[var(--sp-danger)] hover:text-[var(--sp-danger)]/80 transition shrink-0">
+                <i class='bx bx-trash'></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+function getChecked() {
+    return Array.from(document.querySelectorAll('input[name="file-select"]:checked'))
+                .map(cb => cb.value);
+}
+
+function updateSelectionCount() {
+    const count = getChecked().length;
+    document.getElementById('selected-count').textContent = count;
+    document.getElementById('btn-delete-selected').disabled = count === 0;
+
+    const all = document.querySelectorAll('input[name="file-select"]');
+    const selectAll = document.getElementById('select-all');
+    if (selectAll) {
+        selectAll.indeterminate = count > 0 && count < all.length;
+        selectAll.checked = count > 0 && count === all.length;
+    }
+}
+
+function toggleSelectAll(cb) {
+    document.querySelectorAll('input[name="file-select"]')
+            .forEach(el => el.checked = cb.checked);
+    updateSelectionCount();
+}
+
+function cleanupOld(days) {
+    if (!confirm(`Delete files older than ${days} days?`)) return;
+    fetch(`/api/storage/cleanup-old?days=${days}`, {method: 'POST'})
+        .then(r => r.json())
+        .then(d => {
+            showToast(`${d.message}`, 'success');
+            loadFiles();
+        })
+        .catch(() => showToast('Cleanup failed', 'error'));
+}
+
+function deleteSelected() {
+    const filenames = getChecked();
+    if (!filenames.length) return;
+    if (!confirm(`Delete ${filenames.length} selected file(s)?`)) return;
+    fetch('/api/storage/delete-selected', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(filenames),
+    })
+    .then(r => r.json())
+    .then(d => {
+        showToast(`${d.message}`, 'success');
+        loadFiles();
+    })
+    .catch(() => showToast('Delete failed', 'error'));
+}
+
+function deleteAll() {
+    const total = files.length;
+    if (!total) return;
+    if (!confirm(`Delete ALL ${total} files? This cannot be undone.`)) return;
+    fetch('/api/storage/delete-all', {method: 'POST'})
+        .then(r => r.json())
+        .then(d => {
+            showToast(`${d.message}`, 'success');
+            loadFiles();
+        })
+        .catch(() => showToast('Delete failed', 'error'));
+}
+
+function deleteFile(name) {
+    if (!confirm(`Delete ${name}?`)) return;
+    fetch(`/api/storage/files/${name}`, {method: 'DELETE'})
+        .then(r => r.json())
+        .then(d => {
+            showToast(`Deleted ${name}`, 'success');
+            loadFiles();
+        })
+        .catch(() => showToast('Delete failed', 'error'));
+}
+
+function showToast(message, type = 'info') {
+    document.body.dispatchEvent(new CustomEvent('showToast', {
+        detail: {message, type}
+    }));
+}
+
+document.addEventListener('DOMContentLoaded', loadFiles);
+</script>
+{% endblock %}

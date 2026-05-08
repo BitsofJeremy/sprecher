@@ -50,6 +50,11 @@
                 Failed <span class="ml-1 text-xs opacity-75" id="count-failed">(0)</span>
             </span>
         </button>
+        <div class="flex-1"></div>
+        <button id="btn-delete-selected" onclick="deleteSelected()" disabled
+                class="px-4 py-2 bg-[var(--sp-danger)]/20 hover:bg-[var(--sp-danger)]/30 text-[var(--sp-danger)] rounded-lg text-sm font-medium flex items-center gap-2 disabled:opacity-40">
+            <i class='bx bx-trash'></i> Delete Selected (<span id="selected-count">0</span>)
+        </button>
     </div>
 
     <!-- Jobs Table -->
@@ -57,6 +62,9 @@
         <table class="w-full" id="jobs-table">
             <thead>
                 <tr class="border-b border-[var(--sp-border)]">
+                    <th class="p-4 text-sm font-medium text-[var(--sp-muted)] w-10">
+                        <input type="checkbox" id="select-all" onchange="toggleSelectAll(this)" class="w-4 h-4 rounded border-[var(--sp-border)] bg-[var(--sp-bg)] accent-[var(--sp-accent)] cursor-pointer">
+                    </th>
                     <th class="text-left p-4 text-sm font-medium text-[var(--sp-muted)]">Title</th>
                     <th class="text-left p-4 text-sm font-medium text-[var(--sp-muted)]">Engine</th>
                     <th class="text-left p-4 text-sm font-medium text-[var(--sp-muted)]">Voice</th>
@@ -255,6 +263,11 @@
         return `
             <tr class="border-b border-[var(--sp-border)] hover:bg-[var(--sp-surface-hover)] transition-smooth" data-job-id="${job.id}">
                 <td class="p-4">
+                    <input type="checkbox" name="job-select" value="${job.id}"
+                           onchange="updateSelectionCount()"
+                           class="w-4 h-4 rounded border-[var(--sp-border)] bg-[var(--sp-bg)] accent-[var(--sp-accent)] cursor-pointer">
+                </td>
+                <td class="p-4">
                     <a href="/jobs/${job.id}" class="font-medium hover:text-[var(--sp-accent)] transition-smooth">
                         ${job.title || 'Untitled Job'}
                     </a>
@@ -401,6 +414,54 @@
         } catch (error) {
             alert(`Error: ${error.message}`);
         }
+    }
+
+    function getChecked() {
+        return Array.from(document.querySelectorAll('input[name="job-select"]:checked'))
+                    .map(cb => parseInt(cb.value));
+    }
+
+    function updateSelectionCount() {
+        const count = getChecked().length;
+        document.getElementById('selected-count').textContent = count;
+        document.getElementById('btn-delete-selected').disabled = count === 0;
+
+        const all = document.querySelectorAll('input[name="job-select"]');
+        const selectAll = document.getElementById('select-all');
+        if (selectAll) {
+            selectAll.indeterminate = count > 0 && count < all.length;
+            selectAll.checked = count > 0 && count === all.length;
+        }
+    }
+
+    function toggleSelectAll(cb) {
+        document.querySelectorAll('input[name="job-select"]')
+                .forEach(el => el.checked = cb.checked);
+        updateSelectionCount();
+    }
+
+    async function deleteSelected() {
+        const ids = getChecked();
+        if (!ids.length) return;
+        if (!confirm(`Delete ${ids.length} selected job(s)? This cannot be undone.`)) return;
+
+        try {
+            let deleted = 0;
+            for (const id of ids) {
+                const response = await fetch(`/api/jobs/${id}`, { method: 'DELETE' });
+                if (response.ok) deleted++;
+            }
+            showToast(`Deleted ${deleted} job(s)`, 'success');
+            await loadJobs();
+        } catch (error) {
+            showToast('Delete failed', 'error');
+        }
+    }
+
+    function showToast(message, type = 'info') {
+        document.body.dispatchEvent(new CustomEvent('showToast', {
+            detail: { message, type }
+        }));
     }
 
     // Filter tab handling

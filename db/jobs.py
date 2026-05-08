@@ -152,3 +152,11 @@ async def fail_job(job_id: int, error_message: str) -> bool:
         status="failed",
         error_message=error_message,
     )
+
+
+async def delete_job(job_id: int) -> bool:
+    """Delete a job by ID."""
+    async with get_db() as db:
+        cursor = await db.execute("DELETE FROM jobs WHERE id = ?", (job_id,))
+        await db.commit()
+        return cursor.rowcount > 0

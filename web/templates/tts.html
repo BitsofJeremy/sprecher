@@ -171,7 +171,7 @@
             voiceSelect.innerHTML = '<option value="">Select a voice...</option>';
             voices.forEach(voice => {
                 const option = document.createElement('option');
-                option.value = voice.voice_key || voice.id;
+                option.value = voice.voice_key || voice.id || voice.key;
                 option.textContent = `${voice.name} (${voice.engine})`;
                 voiceSelect.appendChild(option);
             });

@@ -27,27 +27,38 @@ def _get_kokoro():
     return _Kokoro
 
 
-# Kokoro voice keys (54 voices from kokoro-hook)
-KOKORO_VOICE_KEYS = {
-    # Female voices (bf_*)
-    "bf_isabella", "bf_emma", "bf_sarah", "bf_nicole", "bf_mia", "bf_rebecca",
-    "bf_zoey", "bf_luna", "bf_ashley", "bf_ava", "bf_olivia", "bf_natasha",
-    "bf_victoria", "bf_chloe", "bf_fem_v2", "bf_alto_v2", "bf_bella_v2",
-    "bf_heatmap_v2", "bf_sarah_v2", "bf_heat_emma", "bf_heat_alto",
-    "bf_heat_emma_v2", "bf_heat_alto_v2", "bf_heat_v2", "bf_heat_v3",
-    # Female voices (af_*)
-    "af_bella", "af_nicole", "af_sarah", "af_sky", "af_bridge",
-    "af_heat_nicole", "af_heat_sarah", "af_heat_v2", "af_heat_v3",
-    "af_heat_alto", "af_heat_andy", "af_sarah_v2", "af_bella_v2",
-    "af_nicole_v2",
-    # Male voices (am_*)
-    "am_adam", "am_michael", "am_eric", "am_andrew", "am_robert",
-    "am_david", "am_alex", "am_arthur", "am_liam", "am_peter",
-    "am_william", "am_bridge", "am_heat_eric", "am_heat_andy",
-}
+# Kokoro voice keys — populated lazily from the actual voices.bin
+# This set is initialized on first use to reflect what's actually available
+_KOKORO_VOICE_KEYS: Optional[set[str]] = None
+
+
+def _get_kokoro_voice_keys() -> set[str]:
+    """Get the actual available voice keys from the Kokoro library."""
+    global _KOKORO_VOICE_KEYS
+    if _KOKORO_VOICE_KEYS is None:
+        kokoro_class = _get_kokoro()
+        # Use model_dir from KokoroEngine to find the model files
+        from pathlib import Path
+        model_dir = Path.home() / ".claude" / "kokoro-models"
+        model_path = str(model_dir / "kokoro-v1.0.onnx")
+        voices_path = str(model_dir / "voices.bin")
+        if Path(model_path).exists() and Path(voices_path).exists():
+            kokoro = kokoro_class(model_path, voices_path)
+            _KOKORO_VOICE_KEYS = set(kokoro.voices)
+        else:
+            # Fallback to empty set if models not found
+            _KOKORO_VOICE_KEYS = set()
+    return _KOKORO_VOICE_KEYS
+
+
+def _invalidate_kokoro_voice_keys():
+    """Clear cached voice keys (call after any model change)."""
+    global _KOKORO_VOICE_KEYS
+    _KOKORO_VOICE_KEYS = None
 
 # Voice metadata for API responses
 VOICE_METADATA = {
+    # Standard Kokoro voices (from voices.bin)
     "bf_isabella": {"name": "Isabella", "gender": "female", "lang": "en-us", "description": "Warm, versatile female voice"},
     "bf_emma": {"name": "Emma", "gender": "female", "lang": "en-us", "description": "Bright, friendly female voice"},
     "bf_sarah": {"name": "Sarah", "gender": "female", "lang": "en-us", "description": "Professional female voice"},
@@ -62,6 +73,8 @@ VOICE_METADATA = {
     "bf_natasha": {"name": "Natasha", "gender": "female", "lang": "en-us", "description": "Russian-influenced female"},
     "bf_victoria": {"name": "Victoria", "gender": "female", "lang": "en-us", "description": "Elegant female voice"},
     "bf_chloe": {"name": "Chloe", "gender": "female", "lang": "en-us", "description": "Youthful female voice"},
+    "bf_alice": {"name": "Alice", "gender": "female", "lang": "en-us", "description": "Clear, versatile female voice"},
+    "bf_lily": {"name": "Lily", "gender": "female", "lang": "en-us", "description": "Soft, gentle female voice"},
     "bf_fem_v2": {"name": "Female v2", "gender": "female", "lang": "en-us", "description": "Enhanced female voice"},
     "bf_alto_v2": {"name": "Alto v2", "gender": "female", "lang": "en-us", "description": "Lower female voice v2"},
     "bf_bella_v2": {"name": "Bella v2", "gender": "female", "lang": "en-us", "description": "Bella enhanced v2"},
@@ -77,6 +90,7 @@ VOICE_METADATA = {
     "af_nicole": {"name": "Nicole", "gender": "female", "lang": "en-us", "description": "Clear female voice"},
     "af_sarah": {"name": "Sarah", "gender": "female", "lang": "en-us", "description": "MidAtlantic female voice"},
     "af_sky": {"name": "Sky", "gender": "female", "lang": "en-us", "description": "Upbeat female voice"},
+    "af_nova": {"name": "Nova", "gender": "female", "lang": "en-us", "description": "Bright, energetic female"},
     "af_bridge": {"name": "Bridge", "gender": "female", "lang": "en-us", "description": "Neutral female bridge voice"},
     "af_heat_nicole": {"name": "Heat Nicole", "gender": "female", "lang": "en-us", "description": "Heatmap-based Nicole"},
     "af_heat_sarah": {"name": "Heat Sarah", "gender": "female", "lang": "en-us", "description": "Heatmap-based Sarah"},
@@ -101,6 +115,13 @@ VOICE_METADATA = {
     "am_bridge": {"name": "Bridge M", "gender": "male", "lang": "en-us", "description": "Neutral male bridge voice"},
     "am_heat_eric": {"name": "Heat Eric", "gender": "male", "lang": "en-us", "description": "Heatmap-based Eric"},
     "am_heat_andy": {"name": "Heat Andy", "gender": "male", "lang": "en-us", "description": "Heatmap-based Andy"},
+    "am_onyx": {"name": "Onyx", "gender": "male", "lang": "en-us", "description": "Deep, commanding male voice"},
+    "am_puck": {"name": "Puck", "gender": "male", "lang": "en-us", "description": "Light, playful male voice"},
+    "am_fenrir": {"name": "Fenrir", "gender": "male", "lang": "en-us", "description": "Powerful, intense male voice"},
+    "bm_george": {"name": "George", "gender": "male", "lang": "en-us", "description": "Warm, authoritative male"},
+    "bm_lewis": {"name": "Lewis", "gender": "male", "lang": "en-us", "description": "Smooth, confident male voice"},
+    "hf_beta": {"name": "Beta", "gender": "female", "lang": "en-us", "description": "Clear, balanced female"},
+    "hm_omega": {"name": "Omega", "gender": "male", "lang": "en-us", "description": "Deep, resonant male voice"},
 }
 
 
@@ -197,7 +218,7 @@ class KokoroEngine(TTSEngine):
             blended_style = None
             total_weight = 0.0
             for vkey, weight in blend:
-                if vkey in KOKORO_VOICE_KEYS:
+                if vkey in _get_kokoro_voice_keys():
                     voice_style = kokoro.get_voice_style(vkey)
                     if blended_style is None:
                         blended_style = voice_style * weight
@@ -211,7 +232,7 @@ class KokoroEngine(TTSEngine):
                 return kokoro.create(text, blended_style, speed, lang)
 
         # Single voice generation
-        if voice in KOKORO_VOICE_KEYS:
+        if voice in _get_kokoro_voice_keys():
             return kokoro.create(text, voice, speed, lang)
         else:
             # Fallback to default voice
@@ -253,26 +274,28 @@ class KokoroEngine(TTSEngine):
 
     def list_voices(self) -> list[dict]:
         """List available Kokoro voices with metadata."""
+        actual_keys = _get_kokoro_voice_keys()
         voices = []
         for key, meta in VOICE_METADATA.items():
-            voices.append({
-                "key": key,
-                "name": meta["name"],
-                "gender": meta["gender"],
-                "lang": meta["lang"],
-                "description": meta["description"],
-                "engine": "kokoro",
-            })
+            if key in actual_keys:
+                voices.append({
+                    "key": key,
+                    "name": meta["name"],
+                    "gender": meta["gender"],
+                    "lang": meta["lang"],
+                    "description": meta["description"],
+                    "engine": "kokoro",
+                })
         return voices
 
     def validate_voice(self, voice: str) -> bool:
         """Check if voice key is valid."""
-        if voice in KOKORO_VOICE_KEYS:
+        if voice in _get_kokoro_voice_keys():
             return True
         # Check if it's a valid blend string
         blend = parse_blend_string(voice)
         if blend:
-            return all(vk in KOKORO_VOICE_KEYS for vk, _ in blend)
+            return all(vk in _get_kokoro_voice_keys() for vk, _ in blend)
         return False
 
 

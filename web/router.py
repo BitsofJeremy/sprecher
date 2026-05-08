@@ -103,6 +103,16 @@ async def voice_add_page(request: Request) -> HTMLResponse:
     )
 
 
+@web_router.get("/storage")
+async def storage_page(request: Request) -> HTMLResponse:
+    """Storage management page."""
+    return templates.TemplateResponse(
+        request=request,
+        name="storage.html",
+        context={"page_title": "Storage Management - Sprecher"},
+    )
+
+
 @web_router.post("/voice/add")
 async def voice_add_submit(request: Request) -> HTMLResponse:
     """Handle voice add form submission via HTMX."""

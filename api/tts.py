@@ -134,21 +134,33 @@ async def tts_voices(authorization: Optional[str] = Header(None)):
     # Also fetch custom voices from DB (Ephergent voices, etc.)
     from db.voices import list_voices as db_list_voices
     db_voices = await db_list_voices(limit=100)
+
+    # Get valid Kokoro voice keys from actual voices.bin
+    valid_kokoro_keys = {v["key"] for v in kokoro_voices}
+
     custom_voices = []
     for v in db_voices:
+        voice_key = v.get("voice_key") or v.get("slug") or str(v["id"])
+
+        # Skip ALL Kokoro preset voices (they come from list_voices)
+        # Only add blends and custom voices from DB
+        if v.get("engine") == "kokoro" and v.get("voice_type") == "preset":
+            continue
+
         custom_voices.append({
-            "key": v.get("voice_key") or v.get("slug") or str(v["id"]),
+            "key": voice_key,
             "name": v["name"],
             "gender": v.get("speaking_style", "").lower() or "neutral",
             "lang": v.get("language", "en-us"),
             "description": v.get("voice_description", ""),
             "engine": v["engine"],
-            "voice_type": v["voice_type"],
+            "voice_type": v.get("voice_type"),
             "slug": v.get("slug"),
             "voice_key": v.get("voice_key"),
             "ref_audio_path": v.get("ref_audio_path"),
             "ref_text": v.get("ref_text"),
         })
+
 
     all_voices = kokoro_voices + custom_voices
     return JSONResponse({"voices": all_voices})

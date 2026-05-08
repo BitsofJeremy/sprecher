@@ -29,6 +29,12 @@
         <button class="filter-tab px-4 py-2 rounded-lg text-sm font-medium text-[var(--sp-muted)] hover:bg-[var(--sp-surface)] hover:text-[var(--sp-text)] transition-smooth" data-filter="kokoro">
             Kokoro <span class="ml-1 text-xs opacity-75" id="count-kokoro">(0)</span>
         </button>
+        <button class="filter-tab px-4 py-2 rounded-lg text-sm font-medium text-[var(--sp-muted)] hover:bg-[var(--sp-surface)] hover:text-[var(--sp-text)] transition-smooth" data-filter="blend">
+            Blends <span class="ml-1 text-xs opacity-75" id="count-blend">(0)</span>
+        </button>
+        <button class="filter-tab px-4 py-2 rounded-lg text-sm font-medium text-[var(--sp-muted)] hover:bg-[var(--sp-surface)] hover:text-[var(--sp-text)] transition-smooth" data-filter="ephergent">
+            Ephergent <span class="ml-1 text-xs opacity-75" id="count-ephergent">(0)</span>
+        </button>
         <button class="filter-tab px-4 py-2 rounded-lg text-sm font-medium text-[var(--sp-muted)] hover:bg-[var(--sp-surface)] hover:text-[var(--sp-text)] transition-smooth" data-filter="qwen">
             Qwen <span class="ml-1 text-xs opacity-75" id="count-qwen">(0)</span>
         </button>
@@ -84,10 +90,11 @@
         return '';
     }
 
-    function getTypeBadgeClass(type) {
+    function getTypeBadgeClass(type, voice) {
         const typeLower = (type || '').toLowerCase();
         if (typeLower === 'cloned') return 'bg-[var(--sp-success)]/20 text-[var(--sp-success)]';
         if (typeLower === 'designed') return 'bg-[var(--sp-accent)]/20 text-[var(--sp-accent)]';
+        if (isBlend(voice)) return 'bg-[var(--sp-accent2)]/20 text-[var(--sp-accent2)]';
         return 'bg-[var(--sp-surface)] text-[var(--sp-muted)]';
     }
 
@@ -97,8 +104,8 @@
 
     function createVoiceCard(voice) {
         const engineClass = getEngineClass(voice.engine);
-        const typeBadgeClass = getTypeBadgeClass(voice.voice_type);
-        const slug = voice.slug || voice.voice_key || voice.id;
+        const typeBadgeClass = getTypeBadgeClass(voice.voice_type, voice);
+        const slug = voice.voice_key || voice.key || voice.slug || voice.id;
         const language = voice.language || 'en-US';
         const typeLabel = voice.voice_type || 'preset';
         const description = voice.voice_description || voice.description || '';
@@ -138,11 +145,26 @@
     }
 
     function updateCounts() {
-        const kokoroCount = allVoices.filter(v => (v.engine || '').toLowerCase() === 'kokoro').length;
+        const kokoroCount = allVoices.filter(v => (v.engine || '').toLowerCase() === 'kokoro' && !isBlend(v) && !isEphergent(v)).length;
+        const blendCount = allVoices.filter(v => isBlend(v)).length;
+        const ephergentCount = allVoices.filter(v => isEphergent(v)).length;
         const qwenCount = allVoices.filter(v => (v.engine || '').toLowerCase() === 'qwen').length;
         document.getElementById('count-all').textContent = `(${allVoices.length})`;
         document.getElementById('count-kokoro').textContent = `(${kokoroCount})`;
+        document.getElementById('count-blend').textContent = `(${blendCount})`;
+        document.getElementById('count-ephergent').textContent = `(${ephergentCount})`;
         document.getElementById('count-qwen').textContent = `(${qwenCount})`;
+    }
+
+    function isBlend(voice) {
+        const key = voice.key || voice.voice_key || '';
+        return key.includes('(') && key.includes('+');
+    }
+
+    function isEphergent(voice) {
+        const key = (voice.key || voice.voice_key || voice.slug || '').toLowerCase();
+        const engine = (voice.engine || '').toLowerCase();
+        return engine === 'qwen' || key.startsWith('ephergent_') || key.includes('pixel') || key.includes('arc') || key.includes('clive') || key.includes('kai') || key.includes('glitch');
     }
 
     function renderVoices() {
@@ -157,7 +179,13 @@
 
         const filtered = currentFilter === 'all'
             ? allVoices
-            : allVoices.filter(v => (v.engine || '').toLowerCase() === currentFilter);
+            : currentFilter === 'kokoro'
+                ? allVoices.filter(v => (v.engine || '').toLowerCase() === 'kokoro' && !isBlend(v) && !isEphergent(v))
+                : currentFilter === 'blend'
+                    ? allVoices.filter(v => isBlend(v))
+                    : currentFilter === 'ephergent'
+                        ? allVoices.filter(v => isEphergent(v))
+                        : allVoices.filter(v => (v.engine || '').toLowerCase() === currentFilter);
 
         if (allVoices.length === 0) {
             empty.classList.remove('hidden');
