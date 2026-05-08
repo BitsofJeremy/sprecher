@@ -190,29 +190,25 @@ class KokoroEngine(TTSEngine):
         """Generate audio from text."""
         kokoro = self._get_kokoro_instance()
 
-        # Handle blend voices
+        # Handle blend voices at embedding level (correct approach)
         blend = parse_blend_string(voice)
         if blend and len(blend) > 1:
-            # For blends, we generate each and mix
-            samples_list = []
-            sample_rate = 24000
+            # Get voice style arrays and blend at embedding level
+            blended_style = None
+            total_weight = 0.0
             for vkey, weight in blend:
                 if vkey in KOKORO_VOICE_KEYS:
-                    aud, sr = kokoro.create(text, vkey, speed, lang)
-                    samples_list.append((aud, sr, weight))
+                    voice_style = kokoro.get_voice_style(vkey)
+                    if blended_style is None:
+                        blended_style = voice_style * weight
+                    else:
+                        blended_style = blended_style + (voice_style * weight)
+                    total_weight += weight
 
-            if samples_list:
-                # Mix weighted samples
-                max_len = max(len(a) for a, _, _ in samples_list)
-                mixed = np.zeros(max_len, dtype=np.float32)
-                total_weight = sum(w for _, _, w in samples_list)
-
-                for aud, sr, weight in samples_list:
-                    if len(aud) < max_len:
-                        aud = np.pad(aud, (0, max_len - len(aud)))
-                    mixed += aud * (weight / total_weight)
-
-                return mixed, 24000
+            if blended_style is not None and total_weight > 0:
+                blended_style = blended_style / total_weight
+                # Generate audio once with the blended embedding
+                return kokoro.create(text, blended_style, speed, lang)
 
         # Single voice generation
         if voice in KOKORO_VOICE_KEYS:
